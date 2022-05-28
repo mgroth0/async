@@ -5,8 +5,8 @@ import matt.async.with
 import matt.kjlib.jmath.mean
 import matt.kjlib.jmath.median
 import matt.kjlib.jmath.roundToDecimal
-import matt.kjlib.str.addSpacesUntilLengthIs
-import matt.kjlib.str.tab
+import matt.klib.str.addSpacesUntilLengthIs
+import matt.klib.str.tab
 import matt.klib.dmap.withStoringDefault
 import matt.klib.math.BILLION
 import matt.klib.math.MILLION

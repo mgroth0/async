@@ -8,7 +8,7 @@ import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
 import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
-import matt.kjlib.str.tab
+import matt.klib.str.tab
 import matt.klib.lang.go
 import java.io.File
 import java.io.OutputStream
