@@ -222,6 +222,15 @@ class Stopwatch(
   //	((it.key - acc.first) - startRelativeNanos) to it.value
   //  }
 
+  var storePrints = false
+  var storedPrints = ""
+  fun printFun(s: String) {
+	if (storePrints) {
+	  storedPrints += s + "\n"
+	} else if (printWriter == null) println(s)
+	else printWriter.println(s)
+  }
+
   infix fun toc(s: String): Duration? {
 	if (enabled) {
 	  val stop = System.nanoTime()
@@ -229,11 +238,9 @@ class Stopwatch(
 	  record += stop to s
 	  if (!silent) {
 		if (simplePrinting) {
-		  println("${dur.format().addSpacesUntilLengthIs(10)}\t$s")
-		} else if (printWriter == null) {
-		  println("${dur.format().addSpacesUntilLengthIs(10)}\t$prefixS$s")
+		  printFun("${dur.format().addSpacesUntilLengthIs(10)}\t$s")
 		} else {
-		  printWriter.println("${dur.format().addSpacesUntilLengthIs(10)}\t$prefixS$s")
+		  printFun("${dur.format().addSpacesUntilLengthIs(10)}\t$prefixS$s")
 		}
 	  }
 	  return dur
