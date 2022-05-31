@@ -8,9 +8,9 @@ import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
 import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
+import matt.klib.file.MFile
 import matt.klib.str.tab
 import matt.klib.lang.go
-import java.io.File
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -697,7 +697,7 @@ fun <R> stringPipe(giveOp: (OutputStream)->Unit, takeOp: (String)->R): R {
 }
 
 
-fun File.onModify(checkFreq: Duration, op: ()->Unit) {
+fun MFile.onModify(checkFreq: Duration, op: ()->Unit) {
   var lastModified = recursiveLastModified()
   every(checkFreq) {
 	val mod = recursiveLastModified()
