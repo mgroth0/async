@@ -1,8 +1,19 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package matt.async
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.selects.select
 import matt.async.ThreadInterface.Canceller
 import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
@@ -11,9 +22,12 @@ import matt.kjlib.log.massert
 import matt.klib.file.MFile
 import matt.klib.str.tab
 import matt.klib.lang.go
+import matt.stream.kj.readLineOrSuspend
+import java.io.BufferedReader
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.io.UncheckedIOException
 import java.lang.Thread.sleep
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
@@ -707,3 +721,117 @@ fun MFile.onModify(checkFreq: Duration, op: ()->Unit) {
 	lastModified = mod
   }
 }
+
+fun threadedPipedOutput(readOp: BufferedReader.()->Unit, pipeBrokenOp: UncheckedIOException.()->Unit) =
+  PipedOutputStream(
+	threadedPipedInput(readOp, pipeBrokenOp)
+  )
+
+fun threadedPipedInput(readOp: BufferedReader.()->Unit, pipeBrokenOp: UncheckedIOException.()->Unit): PipedInputStream {
+  return PipedInputStream().apply {
+	thread {
+	  try {
+		bufferedReader().readOp()
+	  } catch (e: UncheckedIOException) {
+		require("Pipe broken" in e.toString())
+		e.pipeBrokenOp()
+	  }
+	}
+  }
+}
+
+/*
+fun BufferedReader.myLineSequence(delayMS: Long = 100) = sequence {
+  while (true) {
+	readLineOrSuspend(delayMS)?.go {
+	  yield(it)
+	} ?: break
+  }
+}
+*/
+
+fun BufferedReader.lineFlow(delayMS: Long = 100) = flow<String> {
+  use {
+	while (true) {
+	  readLineOrSuspend(delayMS)?.go {
+		emit(it)
+	  } ?: break
+	}
+  }
+}
+
+@ExampleDontDeleteShouldBePrivate
+private fun CoroutineScope.lineProduce(reader: BufferedReader, delayMS: Long = 100) = produce {
+  reader.use {
+	reader.lineFlow().collect {
+	  send(it)
+	}
+	launch {
+	  reader.lineFlow().collect {
+		send(it)
+	  }
+	}
+	while (true) {
+	  reader.readLineOrSuspend(delayMS)?.go {
+		send(it)
+	  } ?: break
+	}
+  }
+}
+
+@ExampleDontDeleteShouldBePrivate
+private fun BufferedReader.lineChannelFlow(delayMS: Long = 100) = channelFlow<String> {
+  use {
+	lineFlow().collect {
+	  send(it)
+	}
+	launch {
+	  lineFlow().collect {
+		send(it)
+	  }
+	}
+
+	while (true) {
+	  readLineOrSuspend(delayMS)?.go {
+		send(it)
+	  } ?: break
+	}
+  }
+}
+
+@ExampleDontDeleteShouldBePrivate
+private suspend fun BufferedReader.consume() {
+  use {
+	/*  myLineSequence().forEach {
+	 println(it) *//*won't work because of compiler anyway*//*
+  }*/
+	lineFlow().collectLatest {
+	  println(it)
+	}
+	lineFlow().collect {
+	  println(it)
+	}
+	lineChannelFlow().collect {
+	  println(it)
+	}
+	runBlocking {
+	  val p = lineProduce(it)
+	  p.consumeEach {
+		println(it)
+	  }
+	  select {
+		p.onReceive {
+		  println(it)
+		}
+		p.onReceiveCatching {
+		  it.getOrNull()?.go {
+			println(it)
+		  }
+		}
+	  }
+	}
+
+  }
+}
+
+annotation class ExampleDontDeleteShouldBePrivate
