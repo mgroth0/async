@@ -1,3 +1,5 @@
+modtype = LIB
+
 dependencies {
   implementation(projects.kj.kjlib.lang)
   implementation(projects.kj.kjlib)

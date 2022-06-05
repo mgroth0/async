@@ -1,5 +1,7 @@
-import matt.klib.str.upper
 
+
+import matt.klib.str.upper
+modtype = LIB
 dependencies {
   implementation(projects.kj.kjlib.lang)
   implementation(projects.kj.kjlib)
