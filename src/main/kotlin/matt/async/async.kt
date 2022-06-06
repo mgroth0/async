@@ -2,27 +2,18 @@
 
 package matt.async
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.selects.select
 import matt.async.ThreadInterface.Canceller
 import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
 import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
 import matt.klib.file.MFile
-import matt.klib.str.tab
 import matt.klib.lang.go
-import matt.stream.kj.readLineOrSuspend
+import matt.klib.str.tab
 import java.io.BufferedReader
 import java.io.OutputStream
 import java.io.PipedInputStream
@@ -750,88 +741,88 @@ fun BufferedReader.myLineSequence(delayMS: Long = 100) = sequence {
 }
 */
 
-fun BufferedReader.lineFlow(delayMS: Long = 100) = flow<String> {
-  use {
-	while (true) {
-	  readLineOrSuspend(delayMS)?.go {
-		emit(it)
-	  } ?: break
-	}
-  }
-}
-
-@ExampleDontDeleteShouldBePrivate
-private fun CoroutineScope.lineProduce(reader: BufferedReader, delayMS: Long = 100) = produce {
-  reader.use {
-	reader.lineFlow().collect {
-	  send(it)
-	}
-	launch {
-	  reader.lineFlow().collect {
-		send(it)
-	  }
-	}
-	while (true) {
-	  reader.readLineOrSuspend(delayMS)?.go {
-		send(it)
-	  } ?: break
-	}
-  }
-}
-
-@ExampleDontDeleteShouldBePrivate
-private fun BufferedReader.lineChannelFlow(delayMS: Long = 100) = channelFlow<String> {
-  use {
-	lineFlow().collect {
-	  send(it)
-	}
-	launch {
-	  lineFlow().collect {
-		send(it)
-	  }
-	}
-
-	while (true) {
-	  readLineOrSuspend(delayMS)?.go {
-		send(it)
-	  } ?: break
-	}
-  }
-}
-
-@ExampleDontDeleteShouldBePrivate
-private suspend fun BufferedReader.consume() {
-  use {
-	/*  myLineSequence().forEach {
-	 println(it) *//*won't work because of compiler anyway*//*
-  }*/
-	lineFlow().collectLatest {
-	  println(it)
-	}
-	lineFlow().collect {
-	  println(it)
-	}
-	lineChannelFlow().collect {
-	  println(it)
-	}
-	runBlocking {
-	  val p = lineProduce(it)
-	  p.consumeEach {
-		println(it)
-	  }
-	  select {
-		p.onReceive {
-		  println(it)
-		}
-		p.onReceiveCatching {
-		  it.getOrNull()?.go {
-			println(it)
-		  }
-		}
-	  }
-	}
-
-  }
-}
-
-annotation class ExampleDontDeleteShouldBePrivate
+//fun BufferedReader.lineFlow(delayMS: Long = 100) = flow<String> {
+//  use {
+//	while (true) {
+//	  readLineOrSuspend(delayMS)?.go {
+//		emit(it)
+//	  } ?: break
+//	}
+//  }
+//}
+//
+//@ExampleDontDeleteShouldBePrivate
+//private fun CoroutineScope.lineProduce(reader: BufferedReader, delayMS: Long = 100) = produce {
+//  reader.use {
+//	reader.lineFlow().collect {
+//	  send(it)
+//	}
+//	launch {
+//	  reader.lineFlow().collect {
+//		send(it)
+//	  }
+//	}
+//	while (true) {
+//	  reader.readLineOrSuspend(delayMS)?.go {
+//		send(it)
+//	  } ?: break
+//	}
+//  }
+//}
+//
+//@ExampleDontDeleteShouldBePrivate
+//private fun BufferedReader.lineChannelFlow(delayMS: Long = 100) = channelFlow<String> {
+//  use {
+//	lineFlow().collect {
+//	  send(it)
+//	}
+//	launch {
+//	  lineFlow().collect {
+//		send(it)
+//	  }
+//	}
+//
+//	while (true) {
+//	  readLineOrSuspend(delayMS)?.go {
+//		send(it)
+//	  } ?: break
+//	}
+//  }
+//}
+//
+//@ExampleDontDeleteShouldBePrivate
+//private suspend fun BufferedReader.consume() {
+//  use {
+//	/*  myLineSequence().forEach {
+//	 println(it) *//*won't work because of compiler anyway*//*
+//  }*/
+//	lineFlow().collectLatest {
+//	  println(it)
+//	}
+//	lineFlow().collect {
+//	  println(it)
+//	}
+//	lineChannelFlow().collect {
+//	  println(it)
+//	}
+//	runBlocking {
+//	  val p = lineProduce(it)
+//	  p.consumeEach {
+//		println(it)
+//	  }
+//	  select {
+//		p.onReceive {
+//		  println(it)
+//		}
+//		p.onReceiveCatching {
+//		  it.getOrNull()?.go {
+//			println(it)
+//		  }
+//		}
+//	  }
+//	}
+//
+//  }
+//}
+//
+//annotation class ExampleDontDeleteShouldBePrivate
