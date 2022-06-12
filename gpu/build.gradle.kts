@@ -2,10 +2,13 @@
 
 import matt.klib.str.upper
 modtype = LIB
+apis(
+  project(":k:klib")
+)
 dependencies {
 //  implementation(projects.kj.kjlib.lang)
 //  implementation(projects.kj.kjlib)
-  projectOrLocalMavenJVM("api", ":k:klib")
+
   implementation(libs.aparapi)
   /*implementation(libs.aparapi)*/
 
