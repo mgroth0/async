@@ -3,7 +3,7 @@
 import matt.klib.str.upper
 modtype = LIB
 apis(
-  project(":k:klib")
+  ":k:klib".jvm()
 )
 dependencies {
 //  implementation(projects.kj.kjlib.lang)
