@@ -1,8 +1,8 @@
 modtype = LIB
 
 dependencies {
-  implementation(projects.kj.kjlib.kjlibLang)
-  implementation(projects.kj.kjlib)
+  implementation(projects.k.kjlib.kjlibLang)
+  implementation(projects.k.kjlib)
   api(libs.kotlinx.serialization.json)
   api(libs.kotlinx.coroutines)
 }

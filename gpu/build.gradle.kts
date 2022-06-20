@@ -6,8 +6,8 @@ apis(
   ":k:klib".jvm()
 )
 dependencies {
-//  implementation(projects.kj.kjlib.lang)
-//  implementation(projects.kj.kjlib)
+//  implementation(projects.k.kjlib.lang)
+//  implementation(projects.k.kjlib)
 
   implementation(libs.aparapi)
   /*implementation(libs.aparapi)*/
