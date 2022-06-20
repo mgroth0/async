@@ -6,11 +6,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import matt.async.ThreadInterface.Canceller
 import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
 import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
+import matt.klib.commons.VAL_JSON_FILE
+import matt.klib.constants.ValJson
 import matt.klib.file.MFile
 import matt.klib.lang.go
 import matt.klib.str.tab
@@ -685,6 +689,12 @@ class FutureMap<K, V>(val map: Map<K, V>, val futures: List<Future<Unit>>) {
 fun <K, V> mutSemMapOf(vararg pairs: Pair<K, V>, maxsize: Int = Int.MAX_VALUE) =
   MutSemMap(mutableMapOf(*pairs), maxsize = maxsize)
 
+
+
+val WAIT_FOR_MS by lazy {
+  Json.decodeFromStream<ValJson>(VAL_JSON_FILE.inputStream()).WAIT_FOR_MS
+}
+fun waitFor(l: ()->Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
 fun waitFor(sleepPeriod: Long, l: ()->Boolean) {
   while (!l()) {
 	Thread.sleep(sleepPeriod)
