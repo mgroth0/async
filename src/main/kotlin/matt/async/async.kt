@@ -306,63 +306,65 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
   override fun start() {
 	daemon {
 	  while (delays.isNotEmpty()) {
-		var nextKey: Long?
+		val nextKey: Long
+		val n: MyTimerTask
+		val now: Long
 		schedulingSem.with {
 		  nextKey = nexts.firstKey()
-		  val n = nexts[nextKey]!!
-		  val now = System.currentTimeMillis()
+		  n = nexts[nextKey]!!
+		  now = System.currentTimeMillis()
 		  if (debug) {
 			println("DEBUGGING $this")
 
 
 
-			tab("nextKey(rel to now, in sec)=${(nextKey!! - now)/1000.0}")
+			tab("nextKey(rel to now, in sec)=${(nextKey - now)/1000.0}")
 			tab("nexts (rel to now, in sec):")
 
 			nexts.forEach {
 			  tab("\t${(it.key - now)/1000.0}")
 			}
 		  }
-		  if (now >= nextKey!!) {
-			n
-		  } else {
-			sleep(waitTime)
-			null
-		  }
-		}?.apply {
-		  if (debug) {
-			tab("applying")
-		  }
-		  if (!checkCancel(this, nextKey!!)) {
-			if (debug) {
-			  tab("running")
-			}
-			run()
-			if (!checkCancel(this, nextKey!!)) {
-			  if (debug) {
-				tab("rescheduling")
-			  }
-			  schedulingSem.with {
-				if (debug) {
-				  tab("nextKey=${nextKey}")
-				}
-				val removed = nexts.remove(nextKey!!)
-				if (debug) {
-				  tab("removed=${removed}")
-				}
-				var next = delays[this]!! + System.currentTimeMillis()
-				if (debug) {
-				  tab("next=${next}")
-				}
-				while (nexts.containsKey(next)) next += 1
-				if (debug) {
-				  tab("next=${next}")
-				}
-				nexts[next] = this
-			  }
-			}
-		  }
 		}
+		(if (now >= nextKey) {
+		  n
+		} else {
+		  sleep(waitTime)
+		  null
+		})?.apply {
+			if (debug) {
+			  tab("applying")
+			}
+			if (!checkCancel(this, nextKey)) {
+			  if (debug) {
+				tab("running")
+			  }
+			  run()
+			  if (!checkCancel(this, nextKey)) {
+				if (debug) {
+				  tab("rescheduling")
+				}
+				schedulingSem.with {
+				  if (debug) {
+					tab("nextKey=${nextKey}")
+				  }
+				  val removed = nexts.remove(nextKey)
+				  if (debug) {
+					tab("removed=${removed}")
+				  }
+				  var next = delays[this]!! + System.currentTimeMillis()
+				  if (debug) {
+					tab("next=${next}")
+				  }
+				  while (nexts.containsKey(next)) next += 1
+				  if (debug) {
+					tab("next=${next}")
+				  }
+				  nexts[next] = this
+				}
+			  }
+			}
+		  }
 	  }
 	}
   }
@@ -691,10 +693,10 @@ fun <K, V> mutSemMapOf(vararg pairs: Pair<K, V>, maxsize: Int = Int.MAX_VALUE) =
   MutSemMap(mutableMapOf(*pairs), maxsize = maxsize)
 
 
-
 val WAIT_FOR_MS by lazy {
   Json.decodeFromStream<ValJson>(VAL_JSON_FILE.inputStream()).WAIT_FOR_MS
 }
+
 fun waitFor(l: ()->Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
 fun waitFor(sleepPeriod: Long, l: ()->Boolean) {
   while (!l()) {

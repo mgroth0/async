@@ -342,9 +342,12 @@ class ProfiledBlock(val key: String, val onlyDeepest: Boolean = true) {
   fun report() {
 	println("${ProfiledBlock::class.simpleName} $key Report")
 	tab("count\t${times.count()}")
-	tab("min\t${times.minOfOrNull { it.inMilliseconds }}")
+	val mn = times.withIndex().minBy { it.value.inMilliseconds }
+	tab("min(idx=${mn.index})\t${mn.value}")
 	tab("mean\t${times.map { it.inMilliseconds }.mean()}")
 	tab("median\t${times.map { it.inMilliseconds }.median()}")
-	tab("max\t${times.maxOfOrNull { it.inMilliseconds }}")
+	val mx = times.withIndex().maxBy { it.value.inMilliseconds }
+	tab("max(idx=${mx.index})\t${mx.value}")
+	tab("sum\t${times.sumOf { it.inMilliseconds }}")
   }
 }
