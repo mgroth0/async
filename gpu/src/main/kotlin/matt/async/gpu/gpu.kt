@@ -56,7 +56,6 @@ import kotlin.random.Random
 
   val range: Range = Range.create(result.size)
   kernel.execute(range)
-  println("aparapi result:")
-  taball(result)
+  taball("aparapi result:",result)
 
 }
