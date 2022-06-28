@@ -16,7 +16,7 @@ import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
 import matt.klib.commons.VAL_JSON_FILE
 import matt.klib.constants.ValJson
-import matt.klib.file.MFile
+import matt.file.MFile
 import matt.klib.lang.go
 import matt.klib.str.tab
 import java.io.BufferedReader
