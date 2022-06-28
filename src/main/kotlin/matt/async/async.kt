@@ -14,7 +14,7 @@ import matt.async.date.Duration
 import matt.kjlib.file.recursiveLastModified
 import matt.kjlib.lang.jlang.runtime
 import matt.kjlib.log.massert
-import matt.klib.commons.VAL_JSON_FILE
+import matt.file.commons.VAL_JSON_FILE
 import matt.klib.constants.ValJson
 import matt.file.MFile
 import matt.klib.lang.go
