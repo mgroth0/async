@@ -18,12 +18,18 @@ import matt.file.commons.VAL_JSON_FILE
 import matt.klib.constants.ValJson
 import matt.file.MFile
 import matt.klib.lang.go
+import matt.klib.str.NEW_LINE_CHARS
+import matt.klib.str.NEW_LINE_STRINGS
 import matt.klib.str.tab
+import java.io.BufferedOutputStream
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import java.io.PrintStream
 import java.io.UncheckedIOException
+import java.io.Writer
 import java.lang.Thread.sleep
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
@@ -33,6 +39,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 import kotlin.contracts.contract
+import kotlin.reflect.jvm.internal.impl.protobuf.ByteString.Output
 
 
 // Check out FutureTasks too!
@@ -332,39 +339,39 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
 		  sleep(waitTime)
 		  null
 		})?.apply {
+		  if (debug) {
+			tab("applying")
+		  }
+		  if (!checkCancel(this, nextKey)) {
 			if (debug) {
-			  tab("applying")
+			  tab("running")
 			}
+			run()
 			if (!checkCancel(this, nextKey)) {
 			  if (debug) {
-				tab("running")
+				tab("rescheduling")
 			  }
-			  run()
-			  if (!checkCancel(this, nextKey)) {
+			  schedulingSem.with {
 				if (debug) {
-				  tab("rescheduling")
+				  tab("nextKey=${nextKey}")
 				}
-				schedulingSem.with {
-				  if (debug) {
-					tab("nextKey=${nextKey}")
-				  }
-				  val removed = nexts.remove(nextKey)
-				  if (debug) {
-					tab("removed=${removed}")
-				  }
-				  var next = delays[this]!! + System.currentTimeMillis()
-				  if (debug) {
-					tab("next=${next}")
-				  }
-				  while (nexts.containsKey(next)) next += 1
-				  if (debug) {
-					tab("next=${next}")
-				  }
-				  nexts[next] = this
+				val removed = nexts.remove(nextKey)
+				if (debug) {
+				  tab("removed=${removed}")
 				}
+				var next = delays[this]!! + System.currentTimeMillis()
+				if (debug) {
+				  tab("next=${next}")
+				}
+				while (nexts.containsKey(next)) next += 1
+				if (debug) {
+				  tab("next=${next}")
+				}
+				nexts[next] = this
 			  }
 			}
 		  }
+		}
 	  }
 	}
   }
@@ -378,6 +385,16 @@ private val mainTimer = FullDelayBeforeEveryExecutionTimer("MAIN_TIMER")
 //private var usedTimer = false
 
 
+fun after(
+  d: Duration,
+  op: ()->Unit,
+) {
+  thread {
+	sleep(d.inMilliseconds.toLong())
+	op()
+  }
+}
+
 fun every(
   d: Duration,
   ownTimer: Boolean = false,
@@ -387,7 +404,6 @@ fun every(
   op: MyTimerTask.()->Unit,
 ): MyTimerTask {
   massert(!(ownTimer && timer != null))
-
   val task = MyTimerTask(op, name)
   (if (ownTimer) {
 	FullDelayBeforeEveryExecutionTimer()
@@ -398,13 +414,7 @@ fun every(
 	  theTimer.schedule(task, d.inMilliseconds.toLong())
 	}
   }
-
-
-
-
-
   return task
-
 }
 
 
@@ -744,6 +754,59 @@ fun threadedPipedInput(readOp: BufferedReader.()->Unit, pipeBrokenOp: UncheckedI
   }
 }
 
+
+class LambdaOutputStream(private val op: (Int)->Unit): OutputStream() {
+  override fun write(b: Int) {
+	op(b)
+  }
+}
+
+fun byteArrayWithDefaultJavaioBufferedOutputStreamSize() = ByteArray(8192)
+
+class LambdaBufferedOutputStream(private val op: (String)->Unit): OutputStream() {
+  private var buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+  private var index = 0
+  override fun write(b: Int) {
+	buffer[index++] = b.toByte()
+  }
+
+  override fun flush() {
+	op(String(buffer))
+	buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+	index = 0
+  }
+}
+
+class LambdaLineOutputStream(private val op: (String)->Unit): OutputStream() {
+  private var buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+  private var index = 0
+  override fun write(b: Int) {
+	buffer[index++] = b.toByte()
+  }
+
+  private var stringBuffer = ""
+  override fun flush() {
+	stringBuffer += String(buffer.copyOfRange(0, index))
+	while (NEW_LINE_CHARS.any { it in stringBuffer }) {
+	  var line = ""
+	  var rest = ""
+	  val seq = stringBuffer.asSequence()
+	  var onLine = true
+	  seq.forEach {
+		if (onLine && it in NEW_LINE_CHARS) onLine = false
+		if (onLine) line += it
+		else rest += it
+	  }
+	  op(line)
+	  NEW_LINE_STRINGS.firstOrNull { rest.startsWith(it) }?.go { rest = rest.removePrefix(it) }
+	  stringBuffer = rest
+	}
+	buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+	index = 0
+  }
+}
+
+
 /*
 fun BufferedReader.myLineSequence(delayMS: Long = 100) = sequence {
   while (true) {
@@ -839,3 +902,6 @@ fun BufferedReader.myLineSequence(delayMS: Long = 100) = sequence {
 //}
 //
 //annotation class ExampleDontDeleteShouldBePrivate
+
+
+fun threads() = Thread.getAllStackTraces().keys
