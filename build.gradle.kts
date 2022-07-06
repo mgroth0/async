@@ -1,10 +1,14 @@
 modtype = LIB
 
-dependencies {
-  implementation(projects.k.kjlib.lang)
-  api(libs.kotlinx.serialization.json)
-  api(libs.kotlinx.coroutines)
-}
+apis(
+  libs.kotlinx.serialization.json,
+  libs.kotlinx.coroutines
+)
+
+implementations(
+  projects.k.klib,
+  projects.k.kjlib.lang
+)
 
 plugins {
   kotlin("plugin.serialization")
