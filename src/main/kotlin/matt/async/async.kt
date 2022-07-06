@@ -12,7 +12,7 @@ import kotlinx.serialization.json.decodeFromStream
 import matt.async.ThreadInterface.Canceller
 import matt.async.date.Duration
 import matt.kjlib.lang.jlang.runtime
-import matt.kjlib.log.massert
+import matt.klib.log.massert
 import matt.file.commons.VAL_JSON_FILE
 import matt.klib.constants.ValJson
 import matt.file.MFile
