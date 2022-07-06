@@ -1,5 +1,3 @@
-modtype = LIB
-
 apis(
   libs.kotlinx.serialization.json,
   libs.kotlinx.coroutines
