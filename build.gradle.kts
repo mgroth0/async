@@ -7,7 +7,7 @@ apis(
 
 implementations(
   projects.k.klib,
-  projects.k.file,
+  ":k:file".jvm(),
   projects.k.kjlib.lang
 )
 
