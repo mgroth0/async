@@ -8,6 +8,26 @@ import matt.klib.str.taball
 import kotlin.random.Random
 
 
+/*println("testing if newMac")*/
+/*    if (isNewMac) {
+		println("ok this is working...")
+		implementation(
+				files(
+						"/Users/matthewgroth/registered/kcomp/KJ/jar/aparapi-natives.jar",
+						"/Users/matthewgroth/registered/kcomp/KJ/jar/aparapi.jar",
+						"/Users/matthewgroth/registered/kcomp/KJ/jar/bcel-6.0.jar"
+				)
+		)
+	} else if (isMac) {
+		implementation(
+				files(
+						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/aparapi-natives.jar",
+						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/aparapi.jar",
+						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/bcel-6.0.jar"
+				)
+		)
+	} else {*/
+
 @Suppress("unused") fun aparAPITest() {
 
 
