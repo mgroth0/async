@@ -36,6 +36,11 @@ import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 import kotlin.contracts.contract
 
+val gitSubmoduleDebuggubg = 1.apply {
+  println("test1")
+  println("test2")
+}
+
 
 // Check out FutureTasks too!
 
