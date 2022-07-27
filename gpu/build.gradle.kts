@@ -2,7 +2,7 @@
 
 import matt.klib.str.upper
 apis(
-  ":k:klib".jvm()
+  ":k:klib".auto()
 )
 dependencies {
   implementation(libs.aparapi)
