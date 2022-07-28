@@ -1,0 +1,15 @@
+{
+    "modType": "LIB",
+    "dependencies": [
+        {
+            "type": "matt.mstruct.BuildJsonProjectDependency",
+            "cfg": "api",
+            "path": ":k:klib"
+        },
+        {
+            "type": "matt.mstruct.BuildJsonLibDependency",
+            "cfg": "implementation",
+            "key": "aparapi"
+        }
+    ]
+}
