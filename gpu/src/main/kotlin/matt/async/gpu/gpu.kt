@@ -38,7 +38,7 @@ import kotlin.random.Random
 	println("Platform $platformc{")
 	println("   Name    : \"" + platform.name + "\"")
 	println("   Vendor  : \"" + platform.vendor + "\"")
-	println("   Version : \"" + platform.version + "\"")
+	println("   matt.klib.release.Version : \"" + platform.version + "\"")
 	val devices = platform.openCLDevices
 	println("   Platform contains " + devices.size + " OpenCL devices")
 	for ((devicec, device) in devices.withIndex()) {
