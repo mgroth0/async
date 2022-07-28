@@ -29,6 +29,8 @@ import kotlin.contracts.contract
 
 var simplePrinting = false
 
+
+
 class Duration private constructor(nanos: Long): Comparable<Duration> {
 
   constructor(startNanos: Number, stopNanos: Number): this(
@@ -47,6 +49,8 @@ class Duration private constructor(nanos: Long): Comparable<Duration> {
 	fun ofSeconds(sec: Number) = Duration((sec.toDouble()*BILLION).toLong())
 	fun ofMilliseconds(ms: Number) = Duration((ms.toDouble()*MILLION).toLong())
 	fun ofNanoseconds(nanos: Number) = Duration(nanos.toLong())
+
+	fun sinceJavaStarted() = Duration(System.nanoTime())
   }
 
 

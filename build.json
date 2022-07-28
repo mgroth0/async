@@ -20,11 +20,6 @@
             "type": "matt.mstruct.BuildJsonProjectDependency",
             "cfg": "implementation",
             "path": ":k:file"
-        },
-        {
-            "type": "matt.mstruct.BuildJsonProjectDependency",
-            "cfg": "implementation",
-            "path": ":k:kjlib:lang"
         }
     ]
 }
