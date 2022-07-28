@@ -3,6 +3,8 @@ package matt.async.date
 import matt.async.every
 import matt.async.with
 import matt.klib.dmap.withStoringDefault
+import matt.klib.lang.RUNTIME
+import matt.klib.lang.RUNTIME_MX
 import matt.klib.math.BILLION
 import matt.klib.math.MILLION
 import matt.klib.math.THOUSAND
@@ -12,6 +14,7 @@ import matt.klib.math.roundToDecimal
 import matt.klib.str.addSpacesUntilLengthIs
 import matt.klib.str.tab
 import java.io.PrintWriter
+import java.lang.management.ManagementFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -28,8 +31,6 @@ import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 
 var simplePrinting = false
-
-
 
 class Duration private constructor(nanos: Long): Comparable<Duration> {
 
@@ -50,7 +51,7 @@ class Duration private constructor(nanos: Long): Comparable<Duration> {
 	fun ofMilliseconds(ms: Number) = Duration((ms.toDouble()*MILLION).toLong())
 	fun ofNanoseconds(nanos: Number) = Duration(nanos.toLong())
 
-	fun sinceJavaStarted() = Duration(System.nanoTime())
+	fun uptime() = ofMilliseconds(RUNTIME_MX.uptime)
   }
 
 
