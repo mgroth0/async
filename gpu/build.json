@@ -1,5 +1,7 @@
 {
-    "modType": "LIB",
+    "modType": {
+        "type": "matt.klib.mod.LIB"
+    },
     "dependencies": [
         {
             "type": "matt.mstruct.BuildJsonProjectDependency",
@@ -11,5 +13,6 @@
             "cfg": "implementation",
             "key": "aparapi"
         }
-    ]
+    ],
+    "note": null
 }
