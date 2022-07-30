@@ -902,3 +902,14 @@ fun BufferedReader.myLineSequence(delayMS: Long = 100) = sequence {
 
 
 fun threads() = Thread.getAllStackTraces().keys
+
+fun <R> R.runInThread(op: R.() -> Unit) {
+  thread {
+	op()
+  }
+}
+fun <R> R.runInDaemon(op: R.() -> Unit) {
+  daemon {
+	op()
+  }
+}
