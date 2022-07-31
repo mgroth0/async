@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
+@file:OptIn(ExperimentalSerializationApi::class)
 
 package matt.async
 
@@ -15,6 +15,7 @@ import matt.klib.log.massert
 import matt.file.commons.VAL_JSON_FILE
 import matt.klib.constants.ValJson
 import matt.file.MFile
+import matt.file.commons.load
 import matt.file.recursiveLastModified
 import matt.klib.lang.RUNTIME
 import matt.klib.lang.go
@@ -701,7 +702,7 @@ fun <K, V> mutSemMapOf(vararg pairs: Pair<K, V>, maxsize: Int = Int.MAX_VALUE) =
 
 
 val WAIT_FOR_MS by lazy {
-  Json.decodeFromStream<ValJson>(VAL_JSON_FILE.inputStream()).WAIT_FOR_MS
+  ValJson.load().WAIT_FOR_MS
 }
 
 fun waitFor(l: ()->Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
