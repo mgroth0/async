@@ -9,6 +9,8 @@ import matt.klib.constants.ValJson
 import matt.klib.lang.go
 import matt.klib.log.massert
 import matt.klib.str.tab
+import java.lang.System.currentTimeMillis
+import java.lang.Thread.sleep
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
@@ -35,18 +37,15 @@ class ThreadInterface {
 }
 
 
-
 @Suppress("unused") fun IntRange.oscillate(
-  thread: Boolean = false,
-  periodMs: Long? = null,
-  op: (Int)->Unit
+  thread: Boolean = false, periodMs: Long? = null, op: (Int)->Unit
 ): Canceller {
   var i = start - step
   var increasing = true
   val inter = ThreadInterface()
   val f = {
 	while (!inter.canceller.cancelled) {
-	  if (periodMs != null) Thread.sleep(periodMs)
+	  if (periodMs != null) sleep(periodMs)
 	  if (increasing) i += step else i -= step
 	  if (i >= endInclusive) increasing = false
 	  if (i <= start) increasing = true
@@ -60,14 +59,11 @@ class ThreadInterface {
 
 
 fun sleepUntil(systemMs: Long) {
-  val diff = systemMs - System.currentTimeMillis()
+  val diff = systemMs - currentTimeMillis()
   if (diff > 0) {
-	Thread.sleep(diff)
+	sleep(diff)
   }
 }
-
-
-
 
 
 val WAIT_FOR_MS by lazy {
@@ -77,28 +73,28 @@ val WAIT_FOR_MS by lazy {
 fun waitFor(l: ()->Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
 fun waitFor(sleepPeriod: Long, l: ()->Boolean) {
   while (!l()) {
-	Thread.sleep(sleepPeriod)
+	sleep(sleepPeriod)
   }
 }
 
 
-
-
-class MyTimerTask(private val op: MyTimerTask.()->Unit, val name: String? = null) {
-  override fun toString(): String {
-	return if (name != null) {
-	  "TimerTask:${name}"
-	} else {
-	  super.toString()
-	}
-  }
+class MyTimerTask(
+  private val op: MyTimerTask.()->Unit,
+  val name: String? = null,
+  private val execSem: Semaphore? = null,
+  private val onlyIf: ()->Boolean = { true },
+  private val minRateMillis: Long? = null
+) {
+  override fun toString() = name?.let { "TimerTask:${it}" } ?: super.toString()
 
   var cancelled = false
 	private set
 
   fun run() {
 	invocationI += 1
-	op()
+	if (onlyIf()) {
+	  execSem?.with { op() } ?: op()
+	}
   }
 
   fun cancel() {
@@ -107,9 +103,9 @@ class MyTimerTask(private val op: MyTimerTask.()->Unit, val name: String? = null
 
   private var invocationI = 0L
 
-  @Suppress("unused") fun onEvery(period: Int, op: MyTimerTask.()->Unit) {
-	if (invocationI%period == 0L) op()
-  }
+//  @Suppress("unused") fun onEvery(period: Int, op: MyTimerTask.()->Unit) {
+//	if (invocationI%period == 0L) op()
+//  }
 
 }
 
@@ -128,22 +124,18 @@ abstract class MattTimer(val name: String? = null, val debug: Boolean = false) {
 
   fun schedule(task: MyTimerTask, delayMillis: Long) = schedulingSem.with {
 	delays[task] = delayMillis
-	var next = delayMillis + System.currentTimeMillis()
+	var next = delayMillis + currentTimeMillis()
 	while (nexts.containsKey(next)) next += 1
 	nexts[next] = task
-	if (delays.size == 1) {
-	  start()
-	}
+	if (delays.size == 1) start()
   }
 
   fun scheduleWithZeroDelayFirst(task: MyTimerTask, delayMillis: Long) = schedulingSem.with {
 	delays[task] = delayMillis
-	var next = System.currentTimeMillis()
+	var next = currentTimeMillis()
 	while (nexts.containsKey(next)) next += 1
 	nexts[next] = task
-	if (delays.size == 1) {
-	  start()
-	}
+	if (delays.size == 1) start()
   }
 
   abstract fun start()
@@ -153,15 +145,15 @@ abstract class MattTimer(val name: String? = null, val debug: Boolean = false) {
 	  delays.remove(task)
 	  nexts.remove(nextKey)
 	  true
-	} else {
-	  false
-	}
+	} else false
   }
 
 }
 
 /*Not at all for accurate frequencies. The purpose of this is to be as little demanding as possible.*/
 class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = false): MattTimer(name, debug) {
+
+
   override fun start() {
 	daemon {
 	  while (delays.isNotEmpty()) {
@@ -170,13 +162,10 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 		  nextKey = nexts.firstKey()
 		  val n = nexts[nextKey]!!
 		  if (debug) {
+			val now = currentTimeMillis()
 			println("DEBUGGING $this")
-
-			val now = System.currentTimeMillis()
-
 			tab("nextKey(rel to now, in sec)=${(nextKey!! - now)/1000.0}")
 			tab("nexts (rel to now, in sec):")
-
 			nexts.forEach {
 			  tab("\t${(it.key - now)/1000.0}")
 			}
@@ -184,13 +173,13 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 		  n
 		}.apply {
 		  if (!checkCancel(this, nextKey!!)) {
-			Thread.sleep(delays[this]!!)
+			sleep(delays[this]!!)
 			if (!checkCancel(this, nextKey!!)) {
 			  run()
 			  if (!checkCancel(this, nextKey!!)) {
 				schedulingSem.with {
 				  nexts.remove(nextKey!!)
-				  var next = delays[this]!! + System.currentTimeMillis()
+				  var next = delays[this]!! + currentTimeMillis()
 				  while (nexts.containsKey(next)) next += 1
 				  nexts[next] = this
 				}
@@ -201,10 +190,13 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 	  }
 	}
   }
+
 }
 
 class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(name, debug) {
+
   private val waitTime = 100L
+
   override fun start() {
 	daemon {
 	  while (delays.isNotEmpty()) {
@@ -214,60 +206,39 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
 		schedulingSem.with {
 		  nextKey = nexts.firstKey()
 		  n = nexts[nextKey]!!
-		  now = System.currentTimeMillis()
-		  if (debug) {
-			println("DEBUGGING $this")
-
-
-
-			tab("nextKey(rel to now, in sec)=${(nextKey - now)/1000.0}")
-			tab("nexts (rel to now, in sec):")
-
-			nexts.forEach {
-			  tab("\t${(it.key - now)/1000.0}")
-			}
-		  }
+		  now = currentTimeMillis()
+		  if (debug) printDebugInfo(nextKey = nextKey, now = now)
 		}
-		(if (now >= nextKey) {
-		  n
-		} else {
-		  Thread.sleep(waitTime)
-		  null
-		})?.apply {
-		  if (debug) {
-			tab("applying")
-		  }
-		  if (!checkCancel(this, nextKey)) {
-			if (debug) {
-			  tab("running")
-			}
-			run()
-			if (!checkCancel(this, nextKey)) {
-			  if (debug) {
-				tab("rescheduling")
-			  }
+		if (now >= nextKey) {
+		  if (debug) tab("applying")
+		  if (!checkCancel(n, nextKey)) {
+			if (debug) tab("running")
+			n.run()
+			if (!checkCancel(n, nextKey)) {
+			  if (debug) tab("rescheduling")
 			  schedulingSem.with {
-				if (debug) {
-				  tab("nextKey=${nextKey}")
-				}
+				if (debug) tab("nextKey=${nextKey}")
 				val removed = nexts.remove(nextKey)
-				if (debug) {
-				  tab("removed=${removed}")
-				}
-				var next = delays[this]!! + System.currentTimeMillis()
-				if (debug) {
-				  tab("next=${next}")
-				}
+				if (debug) tab("removed=${removed}")
+				var next = delays[n]!! + currentTimeMillis()
+				if (debug) tab("next=${next}")
 				while (nexts.containsKey(next)) next += 1
-				if (debug) {
-				  tab("next=${next}")
-				}
-				nexts[next] = this
+				if (debug) tab("next=${next}")
+				nexts[next] = n
 			  }
 			}
 		  }
-		}
+		} else sleep(waitTime)
 	  }
+	}
+  }
+
+  private fun printDebugInfo(nextKey: Long, now: Long) {
+	println("DEBUGGING $this")
+	tab("nextKey(rel to now, in sec)=${(nextKey - now)/1000.0}")
+	tab("nexts (rel to now, in sec):")
+	nexts.forEach {
+	  tab("\t${(it.key - now)/1000.0}")
 	}
   }
 }
@@ -285,11 +256,10 @@ fun after(
   op: ()->Unit,
 ) {
   thread {
-	Thread.sleep(d.inMilliseconds.toLong())
+	sleep(d.inMilliseconds.toLong())
 	op()
   }
 }
-
 
 
 fun every(
@@ -298,10 +268,12 @@ fun every(
   timer: MattTimer? = null,
   name: String? = null,
   zeroDelayFirst: Boolean = false,
+  execSem: Semaphore? = null,
+  onlyIf: ()->Boolean = { true },
   op: MyTimerTask.()->Unit,
 ): MyTimerTask {
   massert(!(ownTimer && timer != null))
-  val task = MyTimerTask(op, name)
+  val task = MyTimerTask(op, name, execSem = execSem, onlyIf = onlyIf)
   (if (ownTimer) {
 	FullDelayBeforeEveryExecutionTimer()
   } else timer ?: mainTimer).go { theTimer ->
@@ -313,4 +285,3 @@ fun every(
   }
   return task
 }
-
