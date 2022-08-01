@@ -1,7 +1,5 @@
 package matt.async.safe
 
-import matt.async.with
-import matt.async.wrap
 import java.util.concurrent.Semaphore
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract

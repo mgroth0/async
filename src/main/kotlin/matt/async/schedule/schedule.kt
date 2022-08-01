@@ -1,9 +1,9 @@
 package matt.async.schedule
 
-import matt.async.daemon
 import matt.async.date.Duration
+import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
-import matt.async.with
+import matt.async.thread.daemon
 import matt.file.commons.load
 import matt.klib.constants.ValJson
 import matt.klib.lang.go

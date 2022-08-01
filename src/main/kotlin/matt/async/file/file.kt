@@ -1,7 +1,7 @@
 package matt.async.file
 
 import matt.async.date.Duration
-import matt.async.every
+import matt.async.schedule.every
 import matt.file.MFile
 import matt.file.recursiveLastModified
 

@@ -1,7 +1,5 @@
 package matt.async.thread
 
-import matt.async.wrap
-import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
 
