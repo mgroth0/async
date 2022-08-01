@@ -1,6 +1,7 @@
 package matt.async.flow
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 
 /*Matt's suspend versions of kotlin.sequences._Sequences*/
 
@@ -56,4 +57,9 @@ fun <T> Appendable.appendElement(element: T, transform: ((T)->CharSequence)?) {
 	element is Char          -> append(element)
 	else                     -> append(element.toString())
   }
+}
+
+
+@Suppress("unused") suspend fun <T> FlowCollector<T>.emitAll(list: Iterable<T>) {
+  list.forEach { emit(it) }
 }
