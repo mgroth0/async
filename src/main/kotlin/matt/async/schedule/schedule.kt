@@ -93,7 +93,9 @@ class MyTimerTask(
   fun run() {
 	invocationI += 1
 	if (onlyIf()) {
+	  if (minRateMillis != null) sleepUntil(finishedLast + minRateMillis)
 	  execSem?.with { op() } ?: op()
+	  finishedLast = currentTimeMillis()
 	}
   }
 
@@ -102,10 +104,7 @@ class MyTimerTask(
   }
 
   private var invocationI = 0L
-
-//  @Suppress("unused") fun onEvery(period: Int, op: MyTimerTask.()->Unit) {
-//	if (invocationI%period == 0L) op()
-//  }
+  private var finishedLast = 0L
 
 }
 
@@ -270,10 +269,11 @@ fun every(
   zeroDelayFirst: Boolean = false,
   execSem: Semaphore? = null,
   onlyIf: ()->Boolean = { true },
+  minRate: Duration? = null,
   op: MyTimerTask.()->Unit,
 ): MyTimerTask {
   massert(!(ownTimer && timer != null))
-  val task = MyTimerTask(op, name, execSem = execSem, onlyIf = onlyIf)
+  val task = MyTimerTask(op, name, execSem = execSem, onlyIf = onlyIf, minRateMillis = minRate?.inMilliseconds?.toLong())
   (if (ownTimer) {
 	FullDelayBeforeEveryExecutionTimer()
   } else timer ?: mainTimer).go { theTimer ->
