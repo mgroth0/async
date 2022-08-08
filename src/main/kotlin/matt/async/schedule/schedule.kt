@@ -252,9 +252,10 @@ private val mainTimer = FullDelayBeforeEveryExecutionTimer("MAIN_TIMER")
 
 fun after(
   d: Duration,
+  daemon: Boolean = false,
   op: ()->Unit,
 ) {
-  thread {
+  thread(isDaemon = daemon) {
 	sleep(d.inMilliseconds.toLong())
 	op()
   }
