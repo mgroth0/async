@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
@@ -36,7 +37,7 @@ class Duration private constructor(nanos: Long): Comparable<Duration> {
 	(stopNanos.toDouble() - startNanos.toDouble()).toLong()
   )
 
-  private val stupidDur = java.time.Duration.ofNanos(nanos)
+  private val stupidDur: java.time.Duration = java.time.Duration.ofNanos(nanos)
 
   companion object {
 	val purpose =
@@ -97,19 +98,19 @@ val Number.unixMS: Date
 
 private val stupid = "Have to keep it as a different name than Duration.format since they are in the same package???"
 
-val myDateFormatStr = "EEE, MMM d, h:mm a"
-val myDateTimeFormat = DateTimeFormatter.ofPattern(myDateFormatStr)
+const val myDateFormatStr = "EEE, MMM d, h:mm a"
+val myDateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(myDateFormatStr)
 fun Date.formatDate(): String = SimpleDateFormat(myDateFormatStr).format(this)
-fun today() = LocalDate.now()
-fun tomorrow() = today().plus(1, ChronoUnit.DAYS)
-fun nowDateTime() = today().atTime(LocalTime.now())
+fun today(): LocalDate = LocalDate.now()
+fun tomorrow(): LocalDate = today().plus(1, ChronoUnit.DAYS)
+fun nowDateTime(): LocalDateTime = today().atTime(LocalTime.now())
 
-fun localDateTimeOfEpochMilli(ms: Long) = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault())
+fun localDateTimeOfEpochMilli(ms: Long): LocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault())
 
 fun milli() = System.currentTimeMillis()
 
-fun LocalDateTime.atTime(hour: Int, min: Int) = toLocalDate().atTime(hour, min)
-private val OFFSET = OffsetDateTime.now().offset
+fun LocalDateTime.atTime(hour: Int, min: Int): LocalDateTime = toLocalDate().atTime(hour, min)
+private val OFFSET: ZoneOffset = OffsetDateTime.now().offset
 fun LocalDateTime.toEpochMilli() = toEpochSecond(OFFSET)*1000
 
 operator fun Date.minus(started: Date): Duration {

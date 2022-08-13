@@ -3,7 +3,7 @@ package matt.async.thread
 import kotlin.concurrent.thread
 
 
-fun threads() = Thread.getAllStackTraces().keys
+fun threads(): MutableSet<Thread> = Thread.getAllStackTraces().keys
 fun aliveThreads() = threads().filter { it.isAlive }
 fun aliveDaemonThreads() = aliveThreads().filter { it.isDaemon }
 fun aliveNonDaemonThreads() = aliveThreads().filter { !it.isDaemon }
