@@ -6,7 +6,6 @@ import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon
 import matt.file.commons.load
 import matt.klib.constants.ValJson
-import matt.klib.lang.go
 import matt.klib.log.massert
 import matt.klib.str.tab
 import java.lang.System.currentTimeMillis
@@ -79,6 +78,7 @@ fun waitFor(sleepPeriod: Long, l: ()->Boolean) {
 
 
 class MyTimerTask(
+  internal val delay: Long,
   private val op: MyTimerTask.()->Unit,
   val name: String? = null,
   private val execSem: Semaphore? = null,
@@ -110,38 +110,28 @@ class MyTimerTask(
 
 abstract class MattTimer(val name: String? = null, val debug: Boolean = false) {
   override fun toString(): String {
-	return if (name != null) {
-	  "Timer:${name}"
-	} else {
-	  super.toString()
-	}
+	return if (name != null) "Timer:${name}"
+	else super.toString()
   }
 
   protected val schedulingSem = Semaphore(1)
-  protected val delays = mutableMapOf<MyTimerTask, Long>()
   protected val nexts = sortedMapOf<Long, MyTimerTask>()
 
-  fun schedule(task: MyTimerTask, delayMillis: Long) = schedulingSem.with {
-	delays[task] = delayMillis
-	var next = delayMillis + currentTimeMillis()
+  fun schedule(
+	task: MyTimerTask,
+	zeroDelayFirst: Boolean = false
+  ) = schedulingSem.with {
+	if (this is FullDelayBeforeEveryExecutionTimer) require(nexts.isEmpty())
+	var next = if (zeroDelayFirst) currentTimeMillis() else task.delay + currentTimeMillis()
 	while (nexts.containsKey(next)) next += 1
 	nexts[next] = task
-	if (delays.size == 1) start()
-  }
-
-  fun scheduleWithZeroDelayFirst(task: MyTimerTask, delayMillis: Long) = schedulingSem.with {
-	delays[task] = delayMillis
-	var next = currentTimeMillis()
-	while (nexts.containsKey(next)) next += 1
-	nexts[next] = task
-	if (delays.size == 1) start()
+	if (nexts.size == 1) start()
   }
 
   abstract fun start()
 
   fun checkCancel(task: MyTimerTask, nextKey: Long): Boolean = schedulingSem.with {
 	if (task.cancelled) {
-	  delays.remove(task)
 	  nexts.remove(nextKey)
 	  true
 	} else false
@@ -155,9 +145,10 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 
   override fun start() {
 	daemon {
-	  while (delays.isNotEmpty()) {
+	  var first = true
+	  someLabel@ while (nexts.isNotEmpty()) {
 		var nextKey: Long?
-		schedulingSem.with {
+		val task = schedulingSem.with {
 		  nextKey = nexts.firstKey()
 		  val n = nexts[nextKey]!!
 		  if (debug) {
@@ -170,21 +161,28 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 			}
 		  }
 		  n
-		}.apply {
-		  if (!checkCancel(this, nextKey!!)) {
-			sleep(delays[this]!!)
-			if (!checkCancel(this, nextKey!!)) {
-			  run()
-			  if (!checkCancel(this, nextKey!!)) {
-				schedulingSem.with {
-				  nexts.remove(nextKey!!)
-				  var next = delays[this]!! + currentTimeMillis()
-				  while (nexts.containsKey(next)) next += 1
-				  nexts[next] = this
-				}
-			  }
-			}
+		}
+
+		if (checkCancel(task, nextKey!!)) break
+		if (!first || nexts.entries.first { it.value == task }.key > currentTimeMillis()) {
+		  if (debug) {
+			println("sleeping $this")
 		  }
+		  sleep(task.delay)
+		} else {
+		  if (debug) {
+			println("not sleeping $this")
+		  }
+		}
+		first = false
+		if (checkCancel(task, nextKey!!)) break
+		task.run()
+		if (checkCancel(task, nextKey!!)) break
+		schedulingSem.with {
+		  nexts.remove(nextKey!!)
+		  var next = task.delay + currentTimeMillis()
+		  while (nexts.containsKey(next)) next += 1
+		  nexts[next] = task
 		}
 	  }
 	}
@@ -198,7 +196,7 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
 
   override fun start() {
 	daemon {
-	  while (delays.isNotEmpty()) {
+	  while (nexts.isNotEmpty()) {
 		val nextKey: Long
 		val n: MyTimerTask
 		val now: Long
@@ -219,7 +217,7 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
 				if (debug) tab("nextKey=${nextKey}")
 				val removed = nexts.remove(nextKey)
 				if (debug) tab("removed=${removed}")
-				var next = delays[n]!! + currentTimeMillis()
+				var next = n.delay + currentTimeMillis()
 				if (debug) tab("next=${next}")
 				while (nexts.containsKey(next)) next += 1
 				if (debug) tab("next=${next}")
@@ -245,7 +243,7 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer(nam
 
 // see https://stackoverflow.com/questions/409932/java-timer-vs-executorservice for a future big upgrade. However, I enjoy using this because I suspect it demands fewer resources than executor service and feels simpler in a way to have only a single thread
 //private val timer = Timer(true)
-private val mainTimer = FullDelayBeforeEveryExecutionTimer("MAIN_TIMER")
+private val mainTimer = AccurateTimer("MAIN_TIMER")
 
 //private var usedTimer = false
 
@@ -274,15 +272,17 @@ fun every(
   op: MyTimerTask.()->Unit,
 ): MyTimerTask {
   massert(!(ownTimer && timer != null))
-  val task = MyTimerTask(op, name, execSem = execSem, onlyIf = onlyIf, minRateMillis = minRate?.inMilliseconds?.toLong())
+  val task =
+	MyTimerTask(
+	  d.inMilliseconds.toLong(),
+	  op,
+	  name,
+	  execSem = execSem,
+	  onlyIf = onlyIf,
+	  minRateMillis = minRate?.inMilliseconds?.toLong()
+	)
   (if (ownTimer) {
 	FullDelayBeforeEveryExecutionTimer()
-  } else timer ?: mainTimer).go { theTimer ->
-	if (zeroDelayFirst) {
-	  theTimer.scheduleWithZeroDelayFirst(task, d.inMilliseconds.toLong())
-	} else {
-	  theTimer.schedule(task, d.inMilliseconds.toLong())
-	}
-  }
+  } else timer ?: mainTimer).schedule(task, zeroDelayFirst = zeroDelayFirst)
   return task
 }
