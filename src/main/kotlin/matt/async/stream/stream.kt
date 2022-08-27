@@ -55,6 +55,9 @@ class LambdaLineOutputStream(private val op: (String)->Unit): OutputStream() {
   private var buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
   private var index = 0
   override fun write(b: Int) {
+	if (index == buffer.size - 1) {
+	  flush()
+	}
 	buffer[index++] = b.toByte()
   }
 
