@@ -1,7 +1,7 @@
 package matt.async.queue
 
-import matt.async.date.Duration
 import matt.async.safe.with
+import matt.time.dur.Duration
 import java.util.concurrent.Semaphore
 
 

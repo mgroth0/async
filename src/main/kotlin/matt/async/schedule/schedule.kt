@@ -1,6 +1,6 @@
 package matt.async.schedule
 
-import matt.async.date.Duration
+import matt.time.dur.Duration
 import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon

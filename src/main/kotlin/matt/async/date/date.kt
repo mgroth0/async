@@ -8,6 +8,7 @@ import matt.klib.math.median
 import matt.klib.str.addSpacesUntilLengthIs
 import matt.klib.str.tab
 import matt.time.dur.Duration
+import matt.time.dur.sec
 import java.io.PrintWriter
 import java.util.concurrent.Semaphore
 import kotlin.contracts.ExperimentalContracts
