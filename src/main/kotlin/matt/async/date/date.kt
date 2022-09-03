@@ -31,64 +31,7 @@ import kotlin.contracts.contract
 
 var simplePrinting = false
 
-class Duration private constructor(nanos: Long): Comparable<Duration> {
 
-  constructor(startNanos: Number, stopNanos: Number): this(
-	(stopNanos.toDouble() - startNanos.toDouble()).toLong()
-  )
-
-  private val stupidDur: java.time.Duration = java.time.Duration.ofNanos(nanos)
-
-  companion object {
-	val purpose =
-	  "because stupid kotlin duration is \"experimental\", requiring weird annotations and not working half the time, while stupid java Duration is even more stupid because all the methods take and give whole numbers rather than Doubles. The nice thing is if I eventually want to switch to kotlin.time.Duration backend, it wont be a huge task"
-
-	fun ofDays(days: Number) = Duration((days.toDouble()*60*60*24*BILLION).toLong())
-	fun ofHours(hours: Number) = Duration((hours.toDouble()*60*60*BILLION).toLong())
-	fun ofMinutes(min: Number) = Duration((min.toDouble()*60*BILLION).toLong())
-	fun ofSeconds(sec: Number) = Duration((sec.toDouble()*BILLION).toLong())
-	fun ofMilliseconds(ms: Number) = Duration((ms.toDouble()*MILLION).toLong())
-	fun ofNanoseconds(nanos: Number) = Duration(nanos.toLong())
-
-	fun uptime() = ofMilliseconds(RUNTIME_MX.uptime)
-  }
-
-
-  val inMinutes by lazy {
-	THOUSAND
-	stupidDur.toNanos().toDouble()/MILLION/THOUSAND/60.0
-  }
-  val inSeconds by lazy {
-	stupidDur.toNanos().toDouble()/MILLION/THOUSAND
-  }
-  val inMilliseconds by lazy {
-	stupidDur.toNanos().toDouble()/MILLION
-  }
-  val inMicroseconds by lazy {
-	stupidDur.toNanos().toDouble()/THOUSAND
-  }
-  val inNanoseconds by lazy {
-	stupidDur.toNanos().toDouble()
-  }
-
-  fun format(): String {
-	return when {
-	  inMinutes >= 2.0      -> "${inMinutes.roundToDecimal(2)} min"
-	  inSeconds >= 2.0      -> "${inSeconds.roundToDecimal(2)} sec"
-	  inMilliseconds >= 2.0 -> "${inMilliseconds.roundToDecimal(2)} ms"
-	  inMicroseconds >= 2.0 -> "${inMicroseconds.roundToDecimal(2)} μs"
-	  else                  -> "${inNanoseconds.roundToDecimal(2)} ns"
-
-	}
-  }
-
-  override fun compareTo(other: Duration): Int {
-	return this.stupidDur.compareTo(other.stupidDur)
-  }
-
-  override fun toString() = format()
-
-}
 
 val Number.unixSeconds: Date
   get() = Date((this.toDouble()*1000).toLong())
