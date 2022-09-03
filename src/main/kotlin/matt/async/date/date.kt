@@ -11,7 +11,6 @@ import matt.time.dur.Duration
 import matt.time.dur.sec
 import java.io.PrintWriter
 import java.util.concurrent.Semaphore
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 
@@ -22,7 +21,6 @@ fun println_withtime(s: String) {
   println(System.currentTimeMillis().toString() + ":" + s)
 }
 
-@ExperimentalContracts
 fun <R> stopwatch(s: String, op: ()->R): R {
   contract {
 	callsInPlace(op, EXACTLY_ONCE)
