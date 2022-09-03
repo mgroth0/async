@@ -4,7 +4,7 @@ import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon
 import matt.file.commons.load
-import matt.klib.constants.ValJson
+import matt.file.constants.ValJson
 import matt.lang.massert
 import matt.log.tab
 import matt.time.dur.Duration
