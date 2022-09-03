@@ -1,8 +1,8 @@
 package matt.async.stream
 
 import matt.lang.go
-import matt.klib.str.NEW_LINE_CHARS
-import matt.klib.str.NEW_LINE_STRINGS
+import matt.prim.str.NEW_LINE_CHARS
+import matt.prim.str.NEW_LINE_STRINGS
 import java.io.BufferedReader
 import java.io.OutputStream
 import java.io.PipedInputStream

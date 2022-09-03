@@ -7,7 +7,7 @@ import matt.async.thread.daemon
 import matt.file.commons.load
 import matt.klib.constants.ValJson
 import matt.klib.log.massert
-import matt.klib.str.tab
+import matt.prim.str.tab
 import java.lang.System.currentTimeMillis
 import java.lang.Thread.sleep
 import java.util.concurrent.Semaphore
