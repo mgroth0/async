@@ -1,6 +1,5 @@
 package matt.async.schedule
 
-import matt.time.dur.Duration
 import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon
@@ -8,6 +7,7 @@ import matt.file.commons.load
 import matt.klib.constants.ValJson
 import matt.lang.massert
 import matt.log.tab
+import matt.time.dur.Duration
 import java.lang.System.currentTimeMillis
 import java.lang.Thread.sleep
 import java.util.concurrent.Semaphore
