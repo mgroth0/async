@@ -1,6 +1,6 @@
 package matt.async.stream
 
-import matt.klib.lang.go
+import matt.lang.go
 import matt.klib.str.NEW_LINE_CHARS
 import matt.klib.str.NEW_LINE_STRINGS
 import java.io.BufferedReader

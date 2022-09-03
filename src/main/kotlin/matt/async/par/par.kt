@@ -3,7 +3,7 @@ package matt.async.par
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import matt.async.safe.with
-import matt.klib.lang.RUNTIME
+import matt.lang.RUNTIME
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
