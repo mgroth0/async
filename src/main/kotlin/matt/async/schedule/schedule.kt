@@ -9,7 +9,6 @@ import matt.file.constants.ValJson
 import matt.lang.massert
 import matt.log.Logger
 import matt.log.NONE
-import matt.log.tab
 import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
 import matt.time.dur.Duration
