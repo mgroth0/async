@@ -20,6 +20,10 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "implementation",
 	  "path" : ":k:file"
+	},{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "api",
+	  "path" : ":k:model"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",

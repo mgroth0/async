@@ -8,6 +8,7 @@ import matt.file.commons.load
 import matt.file.constants.ValJson
 import matt.lang.massert
 import matt.log.tab
+import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
 import matt.time.dur.Duration
 import matt.time.dur.sleep
@@ -97,8 +98,14 @@ open class MyTimerTask(
 	invocationI += 1
 	if (onlyIf()) {
 	  if (minRateMillis != null) sleepUntil(finishedLast + minRateMillis)
-	  execSem?.with { op() } ?: op()
-	  finishedLast = currentTimeMillis()
+	  synchronized(latches) {
+		execSem?.with { op() } ?: op()
+		finishedLast = currentTimeMillis()
+		latches.forEach {
+		  it.open()
+		}
+		latches.clear()
+	  }
 	}
   }
 
@@ -110,6 +117,16 @@ open class MyTimerTask(
   private var finishedLast = 0L
 
   var timer: MattTimer<*>? = null
+
+  private val latches = mutableListOf<SimpleLatch>()
+
+  fun waitForNextRunToStartAndFinish() {
+	val latch = SimpleLatch()
+	synchronized(latches) {
+	  latches.add(latch)
+	}
+	latch.await()
+  }
 
 
 }
@@ -136,6 +153,8 @@ class AccurateTimerTask(
 	  timer!!.tasks.sortBy { (it as AccurateTimerTask).next }
 	}
   }
+
+
 }
 
 
