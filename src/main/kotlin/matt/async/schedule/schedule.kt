@@ -160,6 +160,7 @@ abstract class MattTimer<T: MyTimerTask>(val name: String? = null, val debug: Bo
 	if (zeroDelayFirst && this is FullDelayBeforeEveryExecutionTimer) {
 	  skipNextSleep()
 	}
+	tasks += task
 	if (this is AccurateTimer) {
 	  tasks.sortBy { it.next!!.duration }
 	}
@@ -217,6 +218,7 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer<Acc
   override fun start() {
 	daemon {
 	  while (tasks.isNotEmpty()) {
+		if (debug) tab("beginning loop")
 		val n: AccurateTimerTask
 		val now: UnixTime
 		schedulingSem.with {
