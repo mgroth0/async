@@ -7,6 +7,8 @@ import matt.collect.maxlist.MaxList
 import matt.file.commons.load
 import matt.file.constants.ValJson
 import matt.lang.massert
+import matt.log.Logger
+import matt.log.NONE
 import matt.log.tab
 import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
@@ -158,7 +160,10 @@ class AccurateTimerTask(
 }
 
 
-abstract class MattTimer<T: MyTimerTask>(val name: String? = null, val debug: Boolean = false) {
+abstract class MattTimer<T: MyTimerTask>(
+  val name: String? = null,
+  val logger: Logger = NONE
+) {
   override fun toString(): String {
 	return if (name != null) "Timer:${name}"
 	else super.toString()
@@ -198,8 +203,8 @@ abstract class MattTimer<T: MyTimerTask>(val name: String? = null, val debug: Bo
 }
 
 /*Not at all for accurate frequencies. The purpose of this is to be as little demanding as possible.*/
-class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = false):
-  MattTimer<MyTimerTask>(name, debug) {
+class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = NONE):
+  MattTimer<MyTimerTask>(name, logger) {
 
   override val tasks = MaxList<MyTimerTask>(1)
   private val theTask get() = if (tasks.isEmpty()) null else tasks[0]
@@ -217,7 +222,7 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 		require(task != null)
 		if (checkCancel(task)) break
 		if (!skipNextSleepFlag) {
-		  if (debug) println("sleeping $this")
+		  logger += "sleeping $this"
 		  sleep(task.delay)
 		}
 		skipNextSleepFlag = false
@@ -230,28 +235,28 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, debug: Boolean = 
 
 }
 
-class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer<AccurateTimerTask>(name, debug) {
+class AccurateTimer(name: String? = null, logger: Logger = NONE): MattTimer<AccurateTimerTask>(name, logger) {
 
   private val waitTime = 100.milliseconds
 
   override fun start() {
 	daemon {
 	  while (tasks.isNotEmpty()) {
-		if (debug) tab("beginning loop")
+		logger.tab("beginning loop")
 		val n: AccurateTimerTask
 		val now: UnixTime
 		schedulingSem.with {
 		  n = tasks.first()
 		  now = UnixTime()
-		  if (debug) printDebugInfo(n, now = now)
+		  printDebugInfo(n, now = now)
 		}
 		if (now >= n.next!!) {
-		  if (debug) tab("applying")
+		  logger.tab("applying")
 		  if (!checkCancel(n)) {
-			if (debug) tab("running")
+			logger.tab("running")
 			n.run()
 			if (!checkCancel(n)) {
-			  if (debug) tab("rescheduling")
+			  logger.tab("rescheduling")
 			  schedulingSem.with {
 				n.next = UnixTime() + n.delay
 				tasks.sortBy { it.next!! }
@@ -264,11 +269,11 @@ class AccurateTimer(name: String? = null, debug: Boolean = false): MattTimer<Acc
   }
 
   private fun printDebugInfo(nextTask: AccurateTimerTask, now: UnixTime) {
-	println("DEBUGGING $this")
-	tab("nextTask=${nextTask}")
-	tab("nexts (rel to now):")
+	logger += ("DEBUGGING $this")
+	logger.tab("nextTask=${nextTask}")
+	logger.tab("nexts (rel to now):")
 	tasks.forEach {
-	  tab("\t${(it.next!! - now)}")
+	  logger.tab("\t${(it.next!! - now)}")
 	}
   }
 }
