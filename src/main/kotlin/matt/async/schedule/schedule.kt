@@ -95,6 +95,8 @@ open class MyTimerTask(
   var cancelled = false
 	private set
 
+  internal val mightNotBeDoneLatch = SimpleLatch()
+
   fun run() {
 	invocationI += 1
 	if (onlyIf()) {
@@ -112,6 +114,11 @@ open class MyTimerTask(
 
   fun cancel() {
 	cancelled = true
+  }
+
+  fun cancelAndWaitForLastRunToFinish() {
+	cancel()
+	mightNotBeDoneLatch.await()
   }
 
   private var invocationI = 0L
@@ -195,6 +202,7 @@ abstract class MattTimer<T: MyTimerTask>(
   fun checkCancel(task: T): Boolean = schedulingSem.with {
 	if (task.cancelled) {
 	  tasks.remove(task)
+	  task.mightNotBeDoneLatch.open()
 	  true
 	} else false
   }
