@@ -10,7 +10,7 @@
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "api",
-	  "path" : ":k:lang"
+	  "path" : ":k:log"
 	}
   ],
   "note" :         null
