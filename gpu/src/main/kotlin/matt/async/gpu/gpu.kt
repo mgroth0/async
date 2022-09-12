@@ -4,8 +4,6 @@ import com.aparapi.Kernel
 import com.aparapi.Range
 import com.aparapi.internal.kernel.KernelManager
 import com.aparapi.internal.opencl.OpenCLPlatform
-import matt.log.taball
-import kotlin.random.Random
 
 
 /*println("testing if newMac")*/
