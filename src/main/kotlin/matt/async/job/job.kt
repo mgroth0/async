@@ -2,6 +2,8 @@ package matt.async.job
 
 import matt.async.bed.Bed
 import matt.collect.queue.pollUntilEnd
+import matt.lang.sync
+import matt.lang.toStringBuilder
 import matt.model.flowlogic.keypass.KeyPass
 import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
@@ -10,36 +12,50 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 
 class RepeatableDelayableJob(
+  val name: String? = null,
   refreshRate: Duration,
   val op: ()->Unit
 ) {
+
+  override fun toString() = toStringBuilder(::name)
 
   private val refreshMillis = refreshRate.inWholeMilliseconds
 
   @Synchronized
   fun rescheduleForNowPlus(d: Duration) {
+	require(!cancelled)
 	nextRunTime = UnixTime() + d
   }
 
   @Synchronized
   fun hurry() {
+	require(!cancelled)
 	if (runningOpFlag.isNotHeld) {
 	  nextRunTime = UnixTime()
 	  bed.shake()
 	}
   }
 
-  @Synchronized
+
   fun hurryAFreshRun(await: Boolean = false) {
+	require(!cancelled)
 	val ticket = SimpleLatch()
 	waitTickets += ticket
-	nextRunTime = UnixTime()
-	bed.shake()
-	if (await) ticket.await()
+	sync {
+	  nextRunTime = UnixTime()
+	  bed.shake()
+	}
+	if (await) {
+	  require(!cancelled)
+	  println("awaiting on ticket in $this")
+	  ticket.await()
+	  println("ticket opened in $this")
+	}
   }
 
-  @Synchronized
+
   fun awaitNextFullRun() {
+	require(!cancelled)
 	val ticket = SimpleLatch()
 	waitTickets += ticket
 	ticket.await()
