@@ -21,10 +21,25 @@ class RepeatableDelayableJob(
 
   private val refreshMillis = refreshRate.inWholeMilliseconds
 
+  private var lastRunFinished: UnixTime? = null
+
+  val timeSinceLastRunFinished get() = lastRunFinished?.let { UnixTime() - it }
+
   @Synchronized
-  fun rescheduleForNowPlus(d: Duration) {
+  fun rescheduleForNowPlus(d: Duration, orRunImmediatelyIfItsBeen: Duration? = null) {
 	require(!cancelled)
-	nextRunTime = UnixTime() + d
+	if (orRunImmediatelyIfItsBeen != null) {
+	  if (timeSinceLastRunFinished?.let { it > orRunImmediatelyIfItsBeen } != false) {
+		thread {
+		  hurryAFreshRun(await = true)
+		}
+	  } else {
+		nextRunTime = UnixTime() + d
+	  }
+	} else {
+	  nextRunTime = UnixTime() + d
+	}
+
   }
 
   @Synchronized
@@ -47,9 +62,9 @@ class RepeatableDelayableJob(
 	}
 	if (await) {
 	  require(!cancelled)
-	  println("awaiting on ticket in $this")
+//	  println("awaiting on ticket in $this")
 	  ticket.await()
-	  println("ticket opened in $this")
+//	  println("ticket opened in $this")
 	}
   }
 
@@ -84,6 +99,7 @@ class RepeatableDelayableJob(
 	  if (shouldRun) {
 		val tickets = waitTickets.pollUntilEnd()
 		op()
+		lastRunFinished = UnixTime()
 		tickets.forEach { it.open() }
 		runningOpFlag.release()
 	  }
