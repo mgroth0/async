@@ -1,15 +1,15 @@
 package matt.async.job
 
 import matt.async.bed.Bed
-import matt.async.thread.daemon
 import matt.collect.queue.pollUntilEnd
 import matt.model.flowlogic.keypass.KeyPass
 import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.concurrent.thread
 import kotlin.time.Duration
 
-class RepeatableDelayableDaemon(
+class RepeatableDelayableJob(
   refreshRate: Duration,
   val op: ()->Unit
 ) {
@@ -49,9 +49,14 @@ class RepeatableDelayableDaemon(
   private var nextRunTime: UnixTime? = null
   private val runningOpFlag = KeyPass()
   private val bed = Bed()
+  private var cancelled = false
 
-  private val d = daemon {
-	while (true) {
+  fun cancel() {
+	cancelled = true
+  }
+
+  private val d = thread {
+	while (!cancelled) {
 	  val shouldRun = synchronized(this) {
 		val shouldRun = nextRunTime?.let { it < UnixTime() } == true
 		if (shouldRun) {
