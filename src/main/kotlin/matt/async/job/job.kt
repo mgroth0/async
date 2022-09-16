@@ -23,7 +23,7 @@ class RepeatableDelayableJob(
 
   private var lastRunFinished: UnixTime? = null
 
-  val timeSinceLastRunFinished get() = lastRunFinished?.let { UnixTime() - it }
+  private val timeSinceLastRunFinished get() = lastRunFinished?.let { UnixTime() - it }
 
   @Synchronized
   fun rescheduleForNowPlus(d: Duration, orRunImmediatelyIfItsBeen: Duration? = null) {
