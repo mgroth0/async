@@ -3,9 +3,9 @@ package matt.async.job
 import matt.async.bed.Bed
 import matt.collect.queue.pollUntilEnd
 import matt.lang.sync
-import matt.lang.toStringBuilder
 import matt.model.flowlogic.keypass.KeyPass
 import matt.model.latch.SimpleLatch
+import matt.model.tostringbuilder.toStringBuilder
 import matt.time.UnixTime
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
