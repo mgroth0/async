@@ -97,6 +97,8 @@ open class MyTimerTask(
 
   internal val mightNotBeDoneLatch = SimpleLatch()
 
+  fun simplyRunOpUnsafe() = op()
+
   fun run() {
 	invocationI += 1
 	if (onlyIf()) {
