@@ -21,7 +21,7 @@ fun <R> R.runInDaemon(op: R.()->Unit) {
 }
 
 
-inline fun daemon(crossinline block: ()->Unit): Thread {
+fun daemon(block: ()->Unit): Thread {
   return thread(isDaemon = true) {
 	block()
   }
