@@ -79,3 +79,40 @@ import kotlin.random.Random
   taball("aparapi result:",result)
 
 }
+
+
+
+/*this is a different calculation...*/
+/*val d = mk.linalg.matt.math.dot.dot(stim.mat, mat).sum()*/
+
+/*	//	val dottic = tic()
+	//	dottic.toc("starting regular matt.math.dot.dot product")*/
+
+/*	//	dottic.toc("finished regular matt.math.dot.dot product: $e")
+
+	//	dottic.toc("finished GPU matt.math.dot.dot product")
+	//	val flatStimMat = stim.mat.flatten()
+	//	val flatMat = mat.flatten()*/
+
+
+/*val ensureCreatedFirst = stim.flatMat
+val ensureCreatedFirst2 = flatMat
+val result = DoubleArray(field.size2D)
+val k = object: Kernel() {
+  override fun run() {
+	result[globalId] = stim.flatMat[globalId]*flatMat[globalId]
+  }
+}
+k.execute(Range.create(field.size2D))*/
+//	val s = result.sum()
+//	dottic.toc("finished GPU matt.math.dot.dot product: $s")
+
+/*val best = KernelManager.instance().bestDevice()
+println("best:${best}")*/
+
+
+/*exitProcess(0)*/
+
+
+/*return result.sum()*/
+/*return DotProductGPU(stim.flatMat, flatMat).calc()*/
