@@ -11,11 +11,11 @@ import matt.log.Logger
 import matt.log.NONE
 import matt.model.latch.SimpleLatch
 import matt.time.UnixTime
-import matt.time.dur.Duration
 import matt.time.dur.sleep
 import java.lang.System.currentTimeMillis
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class ThreadInterface {
@@ -83,7 +83,7 @@ fun waitFor(sleepPeriod: Long, l: ()->Boolean) {
 
 
 open class MyTimerTask(
-  internal val delay: kotlin.time.Duration,
+  internal val delay: Duration,
   private val op: MyTimerTask.()->Unit,
   val name: String? = null,
   private val execSem: Semaphore? = null,
@@ -142,7 +142,7 @@ open class MyTimerTask(
 }
 
 class AccurateTimerTask(
-  delay: kotlin.time.Duration,
+  delay: Duration,
   op: MyTimerTask.()->Unit,
   name: String? = null,
   execSem: Semaphore? = null,
@@ -301,7 +301,7 @@ fun after(
   op: ()->Unit,
 ) {
   thread(isDaemon = daemon) {
-	sleep(d.toKotlinDuration())
+	sleep(d/*.toKotlinDuration()*/)
 	op()
   }
 }
@@ -323,22 +323,22 @@ fun every(
 	FullDelayBeforeEveryExecutionTimer()
   } else timer ?: mainTimer)
   val task = if (theTimer is AccurateTimer) AccurateTimerTask(
-	d.toKotlinDuration(),
+	d/*.toKotlinDuration()*/,
 	op,
 	name,
 	execSem = execSem,
 	onlyIf = onlyIf,
-	minRateMillis = minRate?.inMilliseconds?.toLong()
+	minRateMillis = minRate?.inWholeMilliseconds
   ).also {
 	theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
   }
   else MyTimerTask(
-	d.toKotlinDuration(),
+	d/*.toKotlinDuration()*/,
 	op,
 	name,
 	execSem = execSem,
 	onlyIf = onlyIf,
-	minRateMillis = minRate?.inMilliseconds?.toLong()
+	minRateMillis = minRate?.inWholeMilliseconds
   ).also {
 	require(theTimer is FullDelayBeforeEveryExecutionTimer)
 	theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
