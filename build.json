@@ -1,33 +1,33 @@
 {
-  "type" :         "matt.mstruct.bj.LIBModule",
+  "type" :         "matt.mstruct.bj.JVM_ONLYModule",
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "api",
+	  "cfg" :  "jvmMainApi",
 	  "key" :  "kotlinx-serialization-json"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "api",
+	  "cfg" :  "commonMainApi",
 	  "key" :  "kotlinx-coroutines"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "implementation",
+	  "cfg" :  "jvmMainImplementation",
 	  "path" : ":k:file"
 	},{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "api",
+	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:model"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "api",
+	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:time"
 	},
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "api",
+	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:log"
 	}
   ],
