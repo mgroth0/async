@@ -1,3 +1,5 @@
+@file:JvmName("AsyncJvmKt")
+
 package matt.async
 
 import kotlinx.coroutines.GlobalScope
