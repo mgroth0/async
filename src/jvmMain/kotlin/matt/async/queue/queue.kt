@@ -1,8 +1,8 @@
 package matt.async.queue
 
 import matt.async.safe.with
-import matt.time.dur.Duration
 import java.util.concurrent.Semaphore
+import kotlin.time.Duration
 
 
 class QueueThread(
@@ -12,7 +12,7 @@ class QueueThread(
 	EVERY_JOB, WHEN_NO_JOBS
   }
 
-  private val sleepPeriod = sleepPeriod.inMilliseconds
+  private val sleepPeriod = sleepPeriod.inWholeMilliseconds
 
 
   private val queue = mutableListOf<Pair<Int, ()->Any?>>()
