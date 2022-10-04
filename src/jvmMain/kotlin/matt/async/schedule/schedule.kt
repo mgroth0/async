@@ -246,7 +246,7 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
 
 class AccurateTimer(name: String? = null, logger: Logger = NONE): MattTimer<AccurateTimerTask>(name, logger) {
 
-  private val waitTime = 100.milliseconds
+  private val waitTime by lazy { 100.milliseconds }
 
   override fun start() {
 	daemon {
@@ -290,7 +290,7 @@ class AccurateTimer(name: String? = null, logger: Logger = NONE): MattTimer<Accu
 
 // see https://stackoverflow.com/questions/409932/java-timer-vs-executorservice for a future big upgrade. However, I enjoy using this because I suspect it demands fewer resources than executor service and feels simpler in a way to have only a single thread
 //private val timer = Timer(true)
-private val mainTimer = AccurateTimer("MAIN_TIMER")
+private val mainTimer by lazy { AccurateTimer("MAIN_TIMER") }
 
 //private var usedTimer = false
 
