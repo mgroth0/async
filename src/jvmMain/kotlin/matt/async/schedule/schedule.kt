@@ -4,12 +4,11 @@ import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon
 import matt.collect.maxlist.MaxList
-import matt.file.commons.load
-import matt.file.constants.ValJson
 import matt.lang.massert
 import matt.log.Logger
 import matt.log.NONE
 import matt.model.latch.SimpleLatch
+import matt.model.valjson.ValJson
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.lang.System.currentTimeMillis
@@ -71,7 +70,7 @@ fun sleepUntil(systemMs: Long) {
 
 
 val WAIT_FOR_MS by lazy {
-  ValJson.load().WAIT_FOR_MS
+  ValJson.WAIT_FOR_MS
 }
 
 fun waitFor(l: ()->Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
