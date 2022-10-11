@@ -21,9 +21,9 @@ import kotlin.random.Random
 	} else if (isMac) {
 		implementation(
 				files(
-						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/aparapi-natives.jar",
-						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/aparapi.jar",
-						"/Users/matt/Desktop/registered/todo/kcomp/KJ/jar/bcel-6.0.jar"
+						"/Users/matt/Desktop/registered/matt.log.todo.todo/kcomp/KJ/jar/aparapi-natives.jar",
+						"/Users/matt/Desktop/registered/matt.log.todo.todo/kcomp/KJ/jar/aparapi.jar",
+						"/Users/matt/Desktop/registered/matt.log.todo.todo/kcomp/KJ/jar/bcel-6.0.jar"
 				)
 		)
 	} else {*/
