@@ -5,10 +5,12 @@ import matt.async.pool.MyThreadPriorities.DEFAULT
 import matt.async.pool.MyThreadPriorities.NOT_IN_USE1
 import matt.async.pool.MyThreadPriorities.NOT_IN_USE10
 import matt.async.pool.wrapper.ThreadPoolExecutorWrapper
+import matt.lang.RUNTIME
 import matt.lang.disabledCode
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
 
@@ -19,34 +21,40 @@ class DaemonPool: Executor {
 	}
   }
 
+  companion object {
+	val POOL_SIZE = RUNTIME.availableProcessors()
+  }
 
   /*Executors.newCachedThreadPool()*/
   private val pool = ThreadPoolExecutorWrapper(
 	corePoolSize = 0,
-	maxPoolSize = 1000,
+	maxPoolSize = POOL_SIZE,
 	keepAliveTime = 60.seconds,
-	workQueue = LinkedBlockingQueue(),
+	workQueue = SynchronousQueue(),
 	threadFactory = {
 	  Thread(it).apply {
 		isDaemon = true
 	  }
 	},
-
-	)
+	handler = CallerRunsPolicy()
+  )
 
 
   private val lowPriorityPool = ThreadPoolExecutorWrapper(
 	corePoolSize = 0,
-	maxPoolSize = 1000,
+	maxPoolSize = POOL_SIZE,
 	keepAliveTime = 60.seconds,
-	workQueue = LinkedBlockingQueue(),
+	workQueue = SynchronousQueue(),
 	threadFactory = {
 	  Thread(it).apply {
 		isDaemon = true
 		priority = CREATING_NEW_CACHE.ordinal
 	  }
-	}
+	},
+	handler = CallerRunsPolicy()
   )
+
+  val activeCount get() = pool.activeCount + lowPriorityPool.activeCount
 
   private val jobStartedCount = AtomicInteger()
   private val jobFinishedCount = AtomicInteger()
@@ -72,6 +80,14 @@ class DaemonPool: Executor {
 	  command.run()
 	}
   }
+
+
+  fun info() = """
+	pool.activeCount = ${pool.activeCount}
+	lowPriorityPool.activeCount = ${lowPriorityPool.activeCount}
+	jobs started = $jobStartedCount
+	jobs finished = $jobFinishedCount
+  """.trimIndent()
 
 }
 

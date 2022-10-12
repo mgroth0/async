@@ -1,5 +1,6 @@
 package matt.async.pool.wrapper
 
+import matt.lang.disabledCode
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.Executor
 import java.util.concurrent.RejectedExecutionHandler
@@ -24,6 +25,15 @@ class ThreadPoolExecutorWrapper(
 
   override fun execute(command: Runnable) {
 	pool.execute(command)
+  }
+
+  val activeCount get() = pool.activeCount
+
+
+  init {
+    disabledCode {
+      pool.execute {  }
+    }
   }
 
 }
