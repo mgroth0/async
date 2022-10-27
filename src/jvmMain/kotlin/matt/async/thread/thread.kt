@@ -1,6 +1,29 @@
 package matt.async.thread
 
+import matt.log.textart.TEXT_BAR
+import matt.model.errreport.Report
 import kotlin.concurrent.thread
+
+class ThreadReport: Report() {
+
+  override val text by lazy {
+	var s = ""
+	s += "Thread Report\n"
+	val threads = aliveThreads()
+	s += ("num alive threads = ${threads.size}\n")
+	threads.forEach {
+	  s += TEXT_BAR + "\n"
+	  s += it.toString() + "\n"
+	  s += "\n"
+	  it.stackTrace.forEach {
+		s += "\t" + it + "\n"
+	  }
+	  s += TEXT_BAR + "\n"
+	}
+
+	s
+  }
+}
 
 
 fun threads(): MutableSet<Thread> = Thread.getAllStackTraces().keys
