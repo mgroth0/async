@@ -1,7 +1,35 @@
-package matt.async.gpu.kernel;
+package matt.async.gpu.kernel
 
-import com.aparapi.Kernel;
-import com.aparapi.Range;
+import com.aparapi.Kernel
+import com.aparapi.Range
+
+class kernel(private val m1: DoubleArray, private val m2: DoubleArray) {
+
+  private var kernel: Kernel? = null
+
+  fun calc(): Double {
+	val localM1 = m1
+	val localM2 = m2
+	val preResult = DoubleArray(m1.size)
+	kernel = object: Kernel() {
+	  override fun run() {
+		val i = globalId
+		preResult[i] = localM1[i]*localM2[i]
+	  }
+	}
+	kernel!!.execute(Range.create(preResult.size))
+	var r = 0.0
+	preResult.forEach {
+	  r += it
+	}
+	return r
+  }
+}
+
+
+/*JAVA:*/
+/*
+
 
 public class kernel {
 
@@ -33,3 +61,7 @@ public class kernel {
         return r;
     }
 }
+
+
+
+* */
