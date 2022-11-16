@@ -7,9 +7,11 @@ import matt.async.pool.MyThreadPriorities.NOT_IN_USE10
 import matt.async.pool.wrapper.ThreadPoolExecutorWrapper
 import matt.lang.RUNTIME
 import matt.lang.disabledCode
+import matt.lang.go
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
@@ -25,17 +27,31 @@ class DaemonPool: Executor {
 	val POOL_SIZE = RUNTIME.availableProcessors()
   }
 
+  private val threadIndexCounter = AtomicInteger(0)
+
+  private fun threadFactory(
+	tag: String,
+	pri: MyThreadPriorities? = null
+  ): ThreadFactory {
+	val priNum = pri?.ordinal
+	return ThreadFactory {
+	  Thread(it).apply {
+		isDaemon = true
+		priNum?.go {
+		  priority = it
+		}
+		name = "DaemonPool Thread ${threadIndexCounter.getAndIncrement()} ($tag)"
+	  }
+	}
+  }
+
   /*Executors.newCachedThreadPool()*/
   private val pool = ThreadPoolExecutorWrapper(
 	corePoolSize = 0,
 	maxPoolSize = POOL_SIZE,
 	keepAliveTime = 60.seconds,
 	workQueue = SynchronousQueue(),
-	threadFactory = {
-	  Thread(it).apply {
-		isDaemon = true
-	  }
-	},
+	threadFactory = threadFactory("pool"),
 	handler = CallerRunsPolicy()
   )
 
@@ -45,12 +61,7 @@ class DaemonPool: Executor {
 	maxPoolSize = POOL_SIZE,
 	keepAliveTime = 60.seconds,
 	workQueue = SynchronousQueue(),
-	threadFactory = {
-	  Thread(it).apply {
-		isDaemon = true
-		priority = CREATING_NEW_CACHE.ordinal
-	  }
-	},
+	threadFactory = threadFactory("lowPriorityPool", pri = CREATING_NEW_CACHE),
 	handler = CallerRunsPolicy()
   )
 

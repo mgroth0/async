@@ -44,8 +44,8 @@ fun <R> R.runInDaemon(op: R.()->Unit) {
 }
 
 /*todo: reinforces my misconception than any thread() will not be daemon. In fact, whether or not thread is initially daemon depends on parent thread I'm pretty sure*/
-fun daemon(block: ()->Unit): Thread {
-  return thread(isDaemon = true) {
+fun daemon(name: String? = null, block: ()->Unit): Thread {
+  return thread(name = name, isDaemon = true) {
 	block()
   }
 }
