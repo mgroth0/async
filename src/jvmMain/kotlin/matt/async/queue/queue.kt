@@ -1,95 +1,43 @@
 package matt.async.queue
 
-import matt.async.safe.with
-import java.util.concurrent.Semaphore
-import kotlin.time.Duration
+import matt.async.thread.daemon
+import matt.model.code.idea.ProceedingIdea
+import matt.model.flowlogic.await.Awaitable
+import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.atomic.AtomicLong
 
 
-class QueueThread(
-  sleepPeriod: Duration, private val sleepType: SleepType
-): Thread() {
-  enum class SleepType {
-	EVERY_JOB, WHEN_NO_JOBS
+class QueueWorker(start: Boolean = true): ProceedingIdea {
+
+  companion object {
+	private var nextId = AtomicLong(0)
   }
 
-  private val sleepPeriod = sleepPeriod.inWholeMilliseconds
+  private val queue = LinkedBlockingQueue<Job<*>>()
+  val id = nextId.getAndIncrement()
 
-
-  private val queue = mutableListOf<Pair<Int, ()->Any?>>()
-  private val results = mutableMapOf<Int, Any?>()
-  private var stopped = false
-  private val organizationalSem = Semaphore(1)
-
-  @Suppress("unused") fun safeStop() {
-	stopped = true
+  fun <T> schedule(op: ()->T): Job<T> {
+	val job = Job(op)
+	queue.add(job)
+	return job
   }
 
-  @Suppress("SpellCheckingInspection") override fun run() {
-	super.run()
-	while (!stopped) {
-	  var ran = false
-	  if (queue.size > 0) {
-		ran = true
-		var id: Int?
-		var task: (()->Any?)?
-		organizationalSem.with {
-		  val (idd, taskk) = queue.removeAt(0)
-		  id = idd
-		  task = taskk
-		}
-		val result = task!!()
-		organizationalSem.with {
-		  results[id!!] = result
-		}
-	  }
-	  if (sleepType == SleepType.EVERY_JOB || !ran) {
-		sleep(sleepPeriod.toLong())
-	  }
-	}
-  }
-
-  object ResultPlaceholder
-
-  private var nextID = 1
-
-  fun <T> with(op: ()->T?): Job<T?> {
-	var id: Int?
-	organizationalSem.with {
-	  id = nextID
-	  nextID += 1
-	  results[id!!] = ResultPlaceholder
-	  queue.add(id!! to op)
-	}
-	return Job(id!!)
-  }
-
-  inner class Job<T>(
-	val id: Int
-  ) {
-	private val isDone: Boolean
-	  get() {
-		return organizationalSem.with {
-		  results[id] != ResultPlaceholder
-		}
-	  }
-
-	@Suppress("UNCHECKED_CAST", "unused") fun waitAndGet(): T {
-	  waitFor()
-	  return results[id] as T
+  inner class Job<T>(internal val op: ()->T): Awaitable<T> {
+	internal val result = LoadedValueSlot<T>()
+	internal fun run() {
+	  result.putLoadedValue(op())
 	}
 
-	private fun waitFor() {
-	  while (!isDone) {
-		sleep(sleepPeriod.toLong())
-	  }
-	}
+	override fun await() = result.await()
   }
-
 
   init {
-	isDaemon = true
-	start() /*start must be at end of init*/
+	daemon(name = "QueueWorker Daemon $id") {
+	  while (true) {
+		queue.take().run()
+	  }
+	}
   }
-
 }
 
