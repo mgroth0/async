@@ -4,6 +4,7 @@ import matt.async.thread.daemon
 import matt.model.code.idea.ProceedingIdea
 import matt.model.flowlogic.await.Awaitable
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
+import matt.obs.prop.BindableProperty
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
@@ -32,12 +33,24 @@ class QueueWorker: ProceedingIdea {
 	override fun await() = result.await()
   }
 
+  private var mWorkingOnJob = BindableProperty<Job<*>?>(null)
+  val workingOnJob by lazy {
+	mWorkingOnJob.readOnly()
+  }
+  val isWorking by lazy {
+	mWorkingOnJob.isNotNull
+  }
+
   init {
 	daemon(name = "QueueWorker Daemon $id") {
 	  while (true) {
-		queue.take().run()
+		val job = mWorkingOnJob.value ?: queue.take()
+		mWorkingOnJob v job
+		job.run()
+		mWorkingOnJob v queue.poll()
 	  }
 	}
   }
+
 }
 

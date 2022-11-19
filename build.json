@@ -1,5 +1,6 @@
 {
-  "type" :         "matt.mstruct.bj.MultiPlatformModule", "jvm": {},
+  "type" :         "matt.mstruct.bj.MultiPlatformModule",
+  "jvm" :          {},
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
@@ -15,7 +16,8 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainImplementation",
 	  "path" : ":k:collect"
-	},{
+	},
+	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:model"
@@ -29,6 +31,11 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:log"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "jvmMainApi",
+	  "path" : ":k:obs"
 	}
   ],
   "note" :         null
