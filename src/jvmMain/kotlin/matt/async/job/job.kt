@@ -3,9 +3,10 @@ package matt.async.job
 import matt.async.bed.Bed
 import matt.collect.queue.pollUntilEnd
 import matt.lang.sync
+import matt.model.code.idea.ProceedingIdea
 import matt.model.flowlogic.keypass.KeyPass
-import matt.model.latch.SimpleLatch
-import matt.model.tostringbuilder.toStringBuilder
+import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.time.UnixTime
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
@@ -15,7 +16,7 @@ class RepeatableDelayableJob(
   val name: String? = null,
   refreshRate: Duration,
   val op: ()->Unit
-) {
+): ProceedingIdea {
 
   override fun toString() = toStringBuilder(::name)
 

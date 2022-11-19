@@ -1,6 +1,6 @@
-@file:JvmName("AsyncJvmKt")
+@file:JvmName("EveryJvmKt")
 
-package matt.async
+package matt.async.every
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

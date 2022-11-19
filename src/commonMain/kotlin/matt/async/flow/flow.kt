@@ -26,27 +26,16 @@ suspend fun <T, A: Appendable> Flow<T>.joinTo(
   truncated: CharSequence = "...",
   transform: ((T)->CharSequence)? = null
 ): A {
-//  println("joinTo debug 1: $buffer")
   buffer.append(prefix)
-//  println("joinTo debug 2: $buffer")
   var count = 0
-//  println("joinTo debug 3: $buffer")
   collect { element ->
-//	println("joinTo debug 4: $buffer")
 	if (++count > 1) buffer.append(separator)
-//	println("joinTo debug 5: $buffer")
 	if (limit < 0 || count <= limit) {
-//	  println("joinTo debug 6: $buffer")
 	  buffer.appendElement(element, transform)
-//	  println("joinTo debug 7: $buffer")
 	} else return@collect
-//	println("joinTo debug 8: $buffer")
   }
-//  println("joinTo debug 9: $buffer")
   if (limit in 0 until count) buffer.append(truncated)
-//  println("joinTo debug 10: $buffer")
   buffer.append(postfix)
-//  println("joinTo debug 11: $buffer")
   return buffer
 }
 

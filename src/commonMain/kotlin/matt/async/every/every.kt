@@ -1,8 +1,8 @@
-package matt.async
+package matt.async.every
 
+import matt.async.every.EveryFirst.DELAY
+import matt.async.every.EveryFirst.OP
 import kotlinx.coroutines.delay
-import matt.async.EveryFirst.DELAY
-import matt.async.EveryFirst.OP
 import kotlin.time.Duration
 
 enum class EveryFirst {

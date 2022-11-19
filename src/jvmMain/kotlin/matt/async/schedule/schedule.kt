@@ -7,8 +7,8 @@ import matt.collect.maxlist.MaxList
 import matt.lang.massert
 import matt.log.NONE
 import matt.log.logger.Logger
-import matt.model.latch.SimpleLatch
-import matt.model.valjson.ValJson
+import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.code.valjson.ValJson
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.lang.System.currentTimeMillis

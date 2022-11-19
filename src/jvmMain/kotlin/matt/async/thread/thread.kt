@@ -1,7 +1,7 @@
 package matt.async.thread
 
 import matt.log.textart.TEXT_BAR
-import matt.model.errreport.Report
+import matt.model.code.errreport.Report
 import kotlin.concurrent.thread
 
 class ThreadReport: Report() {
