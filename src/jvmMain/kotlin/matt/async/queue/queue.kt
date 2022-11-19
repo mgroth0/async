@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
 
-class QueueWorker(start: Boolean = true): ProceedingIdea {
+class QueueWorker: ProceedingIdea {
 
   companion object {
 	private var nextId = AtomicLong(0)
