@@ -1,4 +1,4 @@
-@file:JvmMultifileClass
+@file:JvmName("EveryJvmKt")
 
 package matt.async.every
 

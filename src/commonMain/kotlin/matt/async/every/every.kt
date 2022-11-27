@@ -1,5 +1,3 @@
-@file:JvmMultifileClass
-
 package matt.async.every
 
 import kotlinx.coroutines.delay
