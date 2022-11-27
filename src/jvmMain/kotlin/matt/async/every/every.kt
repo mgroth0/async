@@ -1,5 +1,3 @@
-@file:JvmName("EveryJvmKt")
-
 package matt.async.every
 
 import kotlinx.coroutines.GlobalScope
