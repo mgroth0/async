@@ -7,11 +7,12 @@ import matt.model.code.idea.ProceedingIdea
 import matt.model.flowlogic.await.Awaitable
 import matt.model.flowlogic.latch.SimpleLatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
-import matt.obs.listen.bool.whenFalseOnce
-import matt.obs.prop.BindableProperty
+import matt.obs.bindings.bool.ObsB
+import matt.obs.watch.watchProp
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.Duration.Companion.milliseconds
 
 
 class QueueWorker(name: String? = null): ProceedingIdea {
@@ -69,8 +70,7 @@ class QueueWorker(name: String? = null): ProceedingIdea {
   }
 
   inner class StreamJob<T> internal constructor(
-	private val timer: String? = null,
-	internal val op: StreamJobDSL<T>.()->Unit
+	private val timer: String? = null, internal val op: StreamJobDSL<T>.()->Unit
   ): BaseJob() {
 	private val queue = LinkedBlockingQueue<T>()
 	private var finalCount: Int? = null
@@ -105,31 +105,35 @@ class QueueWorker(name: String? = null): ProceedingIdea {
 	}
   }
 
-  private var mWorkingOnJob = BindableProperty<BaseJob?>(null)
-  val workingOnJob by lazy {
-	mWorkingOnJob.readOnly()
-  }
-  val isWorking by lazy {
-	mWorkingOnJob.isNotNull
-  }
+  private var job: BaseJob? = null
+  private var isWorkingNow = false
+
 
   private val workerThread = daemon(name = "Daemon for ${this.name}") {
 	while (true) {
-	  val job = mWorkingOnJob.value ?: queue.take()
-	  mWorkingOnJob v job
-	  if (verbose) println("$this is running $job")
-	  job.run()
-	  if (verbose) println("$this finished running $job")
-	  mWorkingOnJob v queue.poll()
+	  val localJob = job ?: queue.take()
+	  if (!isWorkingNow) {
+		if (catchUpLatch.isOpen) catchUpLatch = SimpleLatch()
+		isWorkingNow = true
+	  }
+	  if (verbose) println("$this is running $localJob")
+	  localJob.run()
+	  if (verbose) println("$this finished running $localJob")
+	  job = queue.poll() ?: kotlin.run {
+		catchUpLatch.open()
+		isWorkingNow = false
+		null
+	  }
 	}
   }
+  private var catchUpLatch = SimpleLatch().openned()
+  fun letItCatchUp() = catchUpLatch.await()
 
-  fun letItCatchUp() {
-	val latch = SimpleLatch()
-	isWorking.whenFalseOnce {
-	  latch.open()
+
+  val isWorkingWatchProp: ObsB by lazy {
+	watchProp(100.milliseconds) {
+	  isWorkingNow
 	}
-	latch.await()
   }
 
 }
