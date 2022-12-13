@@ -3,16 +3,6 @@
   "jvm" :          {},
   "dependencies" : [
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "jvmMainApi",
-	  "key" :  "kotlinx-serialization-json"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
-	  "cfg" :  "commonMainApi",
-	  "key" :  "kotlinx-coroutines"
-	},
-	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainImplementation",
 	  "path" : ":k:collect"
