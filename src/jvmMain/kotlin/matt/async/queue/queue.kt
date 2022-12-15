@@ -145,4 +145,15 @@ class StreamJobDSL<T>(private val queue: LinkedBlockingQueue<T>) {
 	queue.add(t)
 	count++
   }
+
+  fun yieldAll(seq: Sequence<T>) {
+	seq.forEach {
+	  yield(it)
+	}
+  }
+  fun yieldAll(itr: Iterable<T>) {
+	itr.forEach {
+	  yield(it)
+	}
+  }
 }
