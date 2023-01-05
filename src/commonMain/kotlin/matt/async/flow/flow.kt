@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package matt.async.flow
 
 import kotlinx.coroutines.flow.Flow
