@@ -34,7 +34,7 @@ suspend fun <T, A: Appendable> Flow<T>.joinTo(
 	  buffer.appendElement(element, transform)
 	} else return@collect
   }
-  if (limit in 0 until count) buffer.append(truncated)
+  if (limit in 0 ..< count) buffer.append(truncated)
   buffer.append(postfix)
   return buffer
 }
