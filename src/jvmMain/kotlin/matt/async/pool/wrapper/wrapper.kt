@@ -1,8 +1,9 @@
- package matt.async.pool.wrapper
+package matt.async.pool.wrapper
 
-import matt.lang.disabledCode
+import matt.lang.function.Produce
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.Executor
+import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionHandler
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
@@ -29,11 +30,8 @@ class ThreadPoolExecutorWrapper(
 
   val activeCount get() = pool.activeCount
 
-
-  init {
-    disabledCode {
-      pool.execute {  }
-    }
+  fun <T> submit(op: Produce<T>): Future<T> {
+	return pool.submit(op)
   }
 
 }

@@ -7,9 +7,11 @@ import matt.async.pool.MyThreadPriorities.NOT_IN_USE10
 import matt.async.pool.wrapper.ThreadPoolExecutorWrapper
 import matt.lang.RUNTIME
 import matt.lang.disabledCode
+import matt.lang.function.Produce
 import matt.lang.go
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
@@ -90,6 +92,10 @@ class DaemonPool: Executor {
 	execute {
 	  command.run()
 	}
+  }
+
+  fun <T> submit(op: Produce<T>): Future<T> {
+	return pool.submit(op)
   }
 
 
