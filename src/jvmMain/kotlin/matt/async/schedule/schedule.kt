@@ -1,14 +1,16 @@
 package matt.async.schedule
 
+import matt.async.pool.MyThreadPriorities
 import matt.async.safe.with
 import matt.async.schedule.ThreadInterface.Canceller
 import matt.async.thread.daemon
 import matt.collect.maxlist.MaxList
+import matt.lang.function.Op
 import matt.lang.massert
 import matt.log.NONE
 import matt.log.logger.Logger
-import matt.model.flowlogic.latch.SimpleLatch
 import matt.model.code.valjson.ValJson
+import matt.model.flowlogic.latch.SimpleLatch
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.lang.System.currentTimeMillis
@@ -212,7 +214,7 @@ abstract class MattTimer<T: MyTimerTask>(
 
 /*Not at all for accurate frequencies. The purpose of this is to be as little demanding as possible.*/
 class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = NONE):
-  MattTimer<MyTimerTask>(name, logger) {
+	MattTimer<MyTimerTask>(name, logger) {
 
   override val tasks = MaxList<MyTimerTask>(1)
   private val theTask get() = if (tasks.isEmpty()) null else tasks[0]
@@ -243,12 +245,16 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
 
 }
 
-class AccurateTimer(name: String? = null, logger: Logger = NONE): MattTimer<AccurateTimerTask>(name, logger) {
+class AccurateTimer(
+  name: String? = null,
+  logger: Logger = NONE,
+  private val priority: MyThreadPriorities? = null
+): MattTimer<AccurateTimerTask>(name, logger) {
 
   private val waitTime by lazy { 100.milliseconds }
 
   override fun start() {
-	daemon {
+	daemon(name = "AccurateTimer [$name]", priority = priority) {
 	  while (tasks.isNotEmpty()) {
 		logger.tab("beginning loop")
 		val n: AccurateTimerTask
@@ -344,3 +350,38 @@ fun every(
   }
   return task
 }
+
+
+class SchedulingDaemon(resolution: Duration, name: String? = null) {
+  private val thread = daemon(name = name) {
+	while (true) {
+	  sleep(resolution)
+	  val time = UnixTime()
+	  synchronized(this) {
+		if (tasks.isEmpty() && takingUpMemory) {
+		  tasks = mutableListOf()
+		  takingUpMemory = false
+		} else {
+		  val itr = tasks.listIterator()
+		  while (itr.hasNext()) {
+			val n = itr.next()
+			if (time >= n.first) {
+			  n.second()
+			  itr.remove()
+			}
+		  }
+		}
+	  }
+	}
+  }
+
+  private var takingUpMemory = false
+  private var tasks = mutableListOf<Pair<UnixTime, Op>>()
+
+  @Synchronized
+  fun schedule(time: UnixTime, op: Op) {
+	tasks += time to op
+	takingUpMemory = true
+  }
+}
+

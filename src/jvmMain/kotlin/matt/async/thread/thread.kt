@@ -1,5 +1,6 @@
 package matt.async.thread
 
+import matt.async.pool.MyThreadPriorities
 import matt.log.textart.TEXT_BAR
 import matt.model.code.errreport.Report
 import kotlin.concurrent.thread
@@ -44,8 +45,8 @@ fun <R> R.runInDaemon(op: R.()->Unit) {
 }
 
 /*todo: reinforces my misconception than any thread() will not be daemon. In fact, whether or not thread is initially daemon depends on parent thread I'm pretty sure*/
-fun daemon(name: String? = null, start: Boolean = true, block: ()->Unit): Thread {
-  return thread(name = name, isDaemon = true, start = start) {
+fun daemon(name: String? = null, start: Boolean = true, priority: MyThreadPriorities? = null, block: ()->Unit): Thread {
+  return thread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
 	block()
   }
 }

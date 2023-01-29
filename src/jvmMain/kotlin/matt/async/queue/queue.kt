@@ -5,6 +5,7 @@ import matt.lang.go
 import matt.lang.preciseTime
 import matt.model.code.idea.ProceedingIdea
 import matt.model.flowlogic.await.Awaitable
+import matt.model.flowlogic.await.Donable
 import matt.model.flowlogic.latch.SimpleLatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.obs.bindings.bool.ObsB
@@ -14,8 +15,13 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.Duration.Companion.milliseconds
 
+interface QueueWorkerInter: ProceedingIdea {
+  fun <T> schedule(timer: String? = null, op: ()->T): JobLike<T>
+}
 
-class QueueWorker(name: String? = null): ProceedingIdea {
+interface JobLike<T>: Awaitable<T>, Donable<T>
+
+class QueueWorker(name: String? = null): QueueWorkerInter {
 
   companion object {
 	private var nextId = AtomicLong(0)
@@ -29,7 +35,7 @@ class QueueWorker(name: String? = null): ProceedingIdea {
   override fun toString() = name
 
 
-  fun <T> schedule(timer: String? = null, op: ()->T): Job<T> {
+  override fun <T> schedule(timer: String?, op: ()->T): Job<T> {
 	val job = Job(timer, op)
 	queue.add(job)
 	return job
@@ -57,7 +63,7 @@ class QueueWorker(name: String? = null): ProceedingIdea {
   }
 
   inner class Job<T> internal constructor(private val timer: String? = null, internal val op: ()->T): BaseJob(),
-																									  Awaitable<T> {
+																									  JobLike<T> {
 	internal val result = LoadedValueSlot<T>()
 	override fun run() {
 	  val start = timer?.let { preciseTime() }
@@ -67,6 +73,11 @@ class QueueWorker(name: String? = null): ProceedingIdea {
 	}
 
 	override fun await() = result.await()
+
+	override fun whenDone(c: (T)->Unit) {
+	  result.whenReady(c)
+	}
+
   }
 
   inner class StreamJob<T> internal constructor(
@@ -151,6 +162,7 @@ class StreamJobDSL<T>(private val queue: LinkedBlockingQueue<T>) {
 	  yield(it)
 	}
   }
+
   fun yieldAll(itr: Iterable<T>) {
 	itr.forEach {
 	  yield(it)
