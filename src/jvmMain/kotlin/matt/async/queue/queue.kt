@@ -1,6 +1,7 @@
 package matt.async.queue
 
 import matt.async.thread.daemon
+import matt.lang.function.Op
 import matt.lang.go
 import matt.lang.preciseTime
 import matt.model.code.idea.ProceedingIdea
@@ -117,7 +118,8 @@ class QueueWorker(name: String? = null): QueueWorkerInter {
   }
 
   private var job: BaseJob? = null
-  private var isWorkingNow = false
+  var isWorkingNow = false
+	private set
 
 
   private val workerThread = daemon(name = "Daemon for ${this.name}") {
@@ -166,6 +168,18 @@ class StreamJobDSL<T>(private val queue: LinkedBlockingQueue<T>) {
   fun yieldAll(itr: Iterable<T>) {
 	itr.forEach {
 	  yield(it)
+	}
+  }
+}
+
+class BlockSafeWorker {
+  private val t = QueueWorker()
+  fun doIfAvailable(op: Op) {
+	if (!t.isWorkingNow) {
+	  println("BlockSafeWorker is not working, so scheduling op!")
+	  t.schedule { op() }
+	} else {
+	  println("BlockSafeWorker is working. Not scheduling op.")
 	}
   }
 }
