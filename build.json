@@ -4,11 +4,6 @@
   "dependencies" : [
 	{
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
-	  "cfg" :  "jvmMainImplementation",
-	  "path" : ":k:collect"
-	},
-	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:time"
 	},
