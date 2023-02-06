@@ -11,6 +11,11 @@
 	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:obs"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "jvmMainApi",
+	  "path" : ":k:collect"
 	}
   ],
   "note" :         null
