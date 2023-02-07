@@ -3,12 +3,12 @@
   "dependencies" : [
 
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "type" : "Lib",
 	  "cfg" :  "implementation",
 	  "key" :  "aparapi"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "api",
 	  "path" : ":k:log"
 	}

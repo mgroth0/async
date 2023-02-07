@@ -3,27 +3,27 @@
   "jvm" :          {},
   "dependencies" : [
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:time"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:obs"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:collect"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:reflect"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "type" : "Lib",
 	  "cfg" :  "commonMainApi",
 	  "key" :  "kotlinx-coroutines"
 	}
