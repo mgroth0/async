@@ -6,7 +6,7 @@ import matt.lang.sync
 import matt.model.code.idea.ProceedingIdea
 import matt.model.flowlogic.keypass.KeyPass
 import matt.model.flowlogic.latch.SimpleLatch
-import matt.model.obj.tostringbuilder.toStringBuilder
+import matt.reflect.tostring.toStringBuilder
 import matt.time.UnixTime
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
