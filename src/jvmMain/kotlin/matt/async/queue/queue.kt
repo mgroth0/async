@@ -50,6 +50,13 @@ class QueueWorker(name: String? = null): QueueWorkerInter {
 	return job
   }
 
+  fun <T> scheduleOrRunSynchroneouslyIf(b: Boolean, op: ()->T): Job<T> {
+	val job = Job(timer = null, op)
+	if (b) job.run()
+	else queue.add(job)
+	return job
+  }
+
 
   fun <T> stream(timer: String? = null, op: StreamJobDSL<T>.()->Unit): Sequence<T> {
 	val job = StreamJob(timer = timer, op)
