@@ -53,4 +53,8 @@ class FakeMutableSuspendSet<E>(val set: SuspendCollection<E>): SuspendMutableSet
 	return set.isEmpty()
   }
 
+  override fun toNonSuspendCollection(): Collection<E> {
+	return set.toNonSuspendCollection()
+  }
+
 }
