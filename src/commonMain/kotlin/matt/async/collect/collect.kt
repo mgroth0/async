@@ -6,6 +6,8 @@ import matt.async.collect.list.suspending
 import matt.async.collect.map.SuspendMap
 import matt.async.collect.map.SuspendMutableMap
 import matt.async.collect.map.suspending
+import java.util.Objects
+import java.util.function.Predicate
 
 interface SuspendIterable<out E> {
   suspend operator fun iterator(): SuspendIterator<E>
@@ -66,7 +68,23 @@ interface SuspendMutableCollection<E>: SuspendCollection<E> {
   suspend fun removeAll(elements: SuspendCollection<E>): Boolean
 
   suspend fun retainAll(elements: SuspendCollection<E>): Boolean
+
+  override suspend fun iterator(): SuspendMutableIterator<E>
+
+  suspend fun removeIf(filter: Predicate<in E>): Boolean {
+	var removed = false
+	val each: SuspendMutableIterator<E> = iterator()
+	while (each.hasNext()) {
+	  if (filter.test(each.next())) {
+		each.remove()
+		removed = true
+	  }
+	}
+	return removed
+  }
+
 }
+
 
 open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>): SuspendWrapCollection<E>(col),
 																				   SuspendMutableCollection<E> {
@@ -211,12 +229,12 @@ suspend inline fun <T, K, M: SuspendMutableMap<in K, SuspendMutableList<T>>> Sus
 }
 
 
-suspend inline fun <T, K> SuspendIterable<T>.groupBy(keySelector: (T) -> K): SuspendMap<K, out SuspendList<out T>> {
+suspend inline fun <T, K> SuspendIterable<T>.groupBy(keySelector: (T)->K): SuspendMap<K, out SuspendList<out T>> {
   return groupByTo(LinkedHashMap<K, SuspendMutableList<T>>().suspending(), keySelector)
 }
 
 
-suspend inline fun <K, V> SuspendMutableMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V {
+suspend inline fun <K, V> SuspendMutableMap<K, V>.getOrPut(key: K, defaultValue: ()->V): V {
   val value = get(key)
   return if (value == null) {
 	val answer = defaultValue()
