@@ -4,6 +4,17 @@ import matt.async.collect.SuspendCollection
 import matt.async.collect.SuspendIterator
 import matt.async.collect.SuspendMutableCollection
 import matt.async.collect.SuspendMutableIterator
+import matt.async.collect.SuspendWrapCollection
+import matt.async.collect.SuspendWrapIterator
+import matt.async.collect.SuspendWrapMutableCollection
+
+suspend fun <E> SuspendCollection<E>.toNonSuspendList(): List<E> {
+  val r = mutableListOf<E>()
+  for (e in this) {
+	r += e
+  }
+  return r
+}
 
 
 interface SuspendList<E>: SuspendCollection<E> {
@@ -23,12 +34,60 @@ interface SuspendList<E>: SuspendCollection<E> {
 
 }
 
+open class SuspendWrapList<E>(private val list: List<E>): SuspendWrapCollection<E>(list), SuspendList<E> {
+
+
+  override suspend fun get(index: Int): E {
+	return list.get(index)
+  }
+
+  override suspend fun indexOf(element: E): Int {
+	return list.indexOf(element)
+  }
+
+  override suspend fun lastIndexOf(element: E): Int {
+	return list.lastIndexOf(element)
+  }
+
+  override suspend fun listIterator(): SuspendListIterator<E> {
+	return SuspendWrapListIterator(list.listIterator())
+  }
+
+  override suspend fun listIterator(index: Int): SuspendListIterator<E> {
+	return SuspendWrapListIterator(list.listIterator(index))
+  }
+
+  override suspend fun subList(fromIndex: Int, toIndex: Int): SuspendList<E> {
+	return SuspendWrapList(list.subList(fromIndex, toIndex))
+  }
+}
+
 
 interface SuspendListIterator<E>: SuspendIterator<E> {
   suspend fun hasPrevious(): Boolean
   suspend fun nextIndex(): Int
   suspend fun previous(): E
   suspend fun previousIndex(): Int
+}
+
+open class SuspendWrapListIterator<E>(private val itr: ListIterator<E>): SuspendWrapIterator<E>(itr),
+																		 SuspendListIterator<E> {
+  override suspend fun hasPrevious(): Boolean {
+	return itr.hasPrevious()
+  }
+
+  override suspend fun nextIndex(): Int {
+	return itr.nextIndex()
+  }
+
+  override suspend fun previous(): E {
+	return itr.previous()
+  }
+
+  override suspend fun previousIndex(): Int {
+	return itr.previousIndex()
+  }
+
 }
 
 
@@ -54,7 +113,84 @@ interface SuspendMutableList<E>: SuspendList<E>, SuspendMutableCollection<E> {
 }
 
 
+class SuspendWrapMutableList<E>(private val list: MutableList<E>): SuspendWrapList<E>(list), SuspendMutableList<E> {
+  private val mutColSuper = SuspendWrapMutableCollection(list)
+  override suspend fun add(element: E): Boolean {
+	return mutColSuper.add(element)
+  }
+
+  override suspend fun addAll(elements: SuspendCollection<E>): Boolean {
+	return mutColSuper.addAll(elements)
+  }
+
+  override suspend fun addAll(index: Int, elements: SuspendCollection<E>): Boolean {
+	return list.addAll(index, elements.toNonSuspendList())
+  }
+
+  override suspend fun add(index: Int, element: E) {
+	return list.add(index, element)
+  }
+
+  override suspend fun iterator(): SuspendMutableIterator<E> {
+	return SuspendWrapMutableListIterator(list.listIterator())
+  }
+
+  override suspend fun listIterator(): SuspendMutableListIterator<E> {
+	return SuspendWrapMutableListIterator(list.listIterator())
+  }
+
+  override suspend fun listIterator(index: Int): SuspendMutableListIterator<E> {
+	return SuspendWrapMutableListIterator(list.listIterator(index))
+  }
+
+  override suspend fun removeAt(index: Int): E {
+	return list.removeAt(index)
+  }
+
+  override suspend fun subList(fromIndex: Int, toIndex: Int): SuspendMutableList<E> {
+	return SuspendWrapMutableList(list.subList(fromIndex, toIndex))
+  }
+
+  override suspend fun set(index: Int, element: E): E {
+	return list.set(index, element)
+  }
+
+  override suspend fun clear() {
+	return list.clear()
+  }
+
+  override suspend fun retainAll(elements: SuspendCollection<E>): Boolean {
+	return list.retainAll(elements.toNonSuspendList())
+  }
+
+  override suspend fun removeAll(elements: SuspendCollection<E>): Boolean {
+	return list.removeAll(elements.toNonSuspendList())
+  }
+
+  override suspend fun remove(element: E): Boolean {
+	return list.remove(element)
+  }
+}
+
+
 interface SuspendMutableListIterator<E>: SuspendListIterator<E>, SuspendMutableIterator<E> {
   suspend fun add(element: E)
   suspend fun set(element: E)
+}
+
+class SuspendWrapMutableListIterator<E>(private val itr: MutableListIterator<E>): SuspendWrapListIterator<E>(itr),
+																				  SuspendMutableListIterator<E> {
+  override suspend fun add(element: E) {
+	return itr.add(element)
+  }
+
+  override suspend fun set(element: E) {
+	return itr.set(element)
+  }
+
+  override suspend fun remove() {
+	return itr.remove()
+  }
+
+
 }
