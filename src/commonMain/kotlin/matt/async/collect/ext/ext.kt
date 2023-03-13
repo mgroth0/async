@@ -13,7 +13,7 @@ import matt.async.collect.set.SuspendSet
 import matt.async.collect.set.SuspendWrapSet
 
 @Suppress("UNCHECKED_CAST")
-public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {
+suspend public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {
   return toNonSuspendCollection().toTypedArray()
 }
 
