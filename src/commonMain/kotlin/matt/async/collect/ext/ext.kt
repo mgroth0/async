@@ -210,7 +210,7 @@ internal object EmptySuspendList: SuspendList<Nothing>, RandomAccess {
 
   suspend override fun size(): Int = 0
   suspend override fun isEmpty(): Boolean = true
-  override suspend fun toNonSuspendCollection(): Collection<Nothing> {
+  override suspend fun toNonSuspendCollection(): List<Nothing> {
 	TODO("Not yet implemented")
   }
 

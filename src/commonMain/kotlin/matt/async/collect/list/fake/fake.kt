@@ -8,6 +8,7 @@ import matt.async.collect.list.SuspendList
 import matt.async.collect.list.SuspendMutableList
 import matt.async.collect.list.SuspendMutableListIterator
 import matt.async.collect.list.toNonSuspendList
+import matt.collect.fake.toFakeMutableList
 import matt.lang.err
 
 fun <E> SuspendList<E>.toSuspendingFakeMutableList() = FakeMutableSuspendList(this)
@@ -73,8 +74,8 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	return list.isEmpty()
   }
 
-  suspend override fun toNonSuspendCollection(): Collection<E> {
-	return list.toNonSuspendList()
+  suspend override fun toNonSuspendCollection(): MutableList<E> {
+	return list.toNonSuspendList().toFakeMutableList()
   }
 
   override suspend fun containsAll(elements: SuspendCollection<E>): Boolean {

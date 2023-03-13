@@ -4,6 +4,7 @@ import matt.async.collect.SuspendCollection
 import matt.async.collect.ext.map
 import matt.async.collect.list.SuspendMutableList
 import matt.async.collect.list.SuspendMutableListIterator
+import matt.model.data.proxy.list.ProxyList
 import matt.model.op.convert.Converter
 
 class SuspendProxyList<S, T>(
@@ -44,8 +45,8 @@ class SuspendProxyList<S, T>(
 	return innerList.isEmpty()
   }
 
-  override suspend fun toNonSuspendCollection(): Collection<T> {
-	TODO("Not yet implemented")
+  override suspend fun toNonSuspendCollection(): MutableList<T> {
+	return ProxyList(innerList.toNonSuspendCollection(), converter)
   }
 
   suspend override fun iterator() = listIterator()

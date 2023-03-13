@@ -49,7 +49,7 @@ open class SuspendWrapCollection<E>(private val collection: Collection<E>): Susp
   }
 
   suspend override fun toNonSuspendCollection(): Collection<E> {
-	return collection
+	TODO()
   }
 
 }

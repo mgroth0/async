@@ -32,6 +32,8 @@ interface SuspendList<E>: SuspendCollection<E> {
 
   suspend fun subList(fromIndex: Int, toIndex: Int): SuspendList<E>
 
+  override suspend fun toNonSuspendCollection(): List<E>
+
 }
 
 fun <E> List<E>.suspending() = SuspendWrapList(this)
@@ -61,6 +63,10 @@ open class SuspendWrapList<E>(private val list: List<E>): SuspendWrapCollection<
 
   override suspend fun subList(fromIndex: Int, toIndex: Int): SuspendList<E> {
 	return SuspendWrapList(list.subList(fromIndex, toIndex))
+  }
+
+  override suspend fun toNonSuspendCollection(): List<E> {
+	return list.toList()
   }
 }
 
@@ -113,6 +119,8 @@ interface SuspendMutableList<E>: SuspendList<E>, SuspendMutableCollection<E> {
   override suspend fun subList(fromIndex: Int, toIndex: Int): SuspendMutableList<E>
 
   suspend fun set(index: Int, element: E): E
+
+  override suspend fun toNonSuspendCollection(): MutableList<E>
 
 }
 
@@ -175,6 +183,10 @@ class SuspendWrapMutableList<E>(private val list: MutableList<E>): SuspendWrapLi
 
   override suspend fun remove(element: E): Boolean {
 	return list.remove(element)
+  }
+
+  override suspend fun toNonSuspendCollection(): MutableList<E> {
+	return list.toMutableList()
   }
 }
 
