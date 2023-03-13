@@ -34,6 +34,8 @@ interface SuspendList<E>: SuspendCollection<E> {
 
 }
 
+fun <E> List<E>.suspending() = SuspendWrapList(this)
+
 open class SuspendWrapList<E>(private val list: List<E>): SuspendWrapCollection<E>(list), SuspendList<E> {
 
 
@@ -69,6 +71,8 @@ interface SuspendListIterator<E>: SuspendIterator<E> {
   suspend fun previous(): E
   suspend fun previousIndex(): Int
 }
+
+fun <E> ListIterator<E>.suspending() = SuspendWrapListIterator(this)
 
 open class SuspendWrapListIterator<E>(private val itr: ListIterator<E>): SuspendWrapIterator<E>(itr),
 																		 SuspendListIterator<E> {
@@ -111,6 +115,8 @@ interface SuspendMutableList<E>: SuspendList<E>, SuspendMutableCollection<E> {
   suspend fun set(index: Int, element: E): E
 
 }
+
+fun <E> MutableList<E>.suspending() = SuspendWrapMutableList(this)
 
 
 class SuspendWrapMutableList<E>(private val list: MutableList<E>): SuspendWrapList<E>(list), SuspendMutableList<E> {
@@ -177,6 +183,8 @@ interface SuspendMutableListIterator<E>: SuspendListIterator<E>, SuspendMutableI
   suspend fun add(element: E)
   suspend fun set(element: E)
 }
+
+fun <E> MutableListIterator<E>.suspending() = SuspendWrapMutableListIterator(this)
 
 class SuspendWrapMutableListIterator<E>(private val itr: MutableListIterator<E>): SuspendWrapListIterator<E>(itr),
 																				  SuspendMutableListIterator<E> {

@@ -179,6 +179,9 @@ class StreamJobDSL<T>(private val queue: LinkedBlockingQueue<T>) {
   }
 }
 
+
+/*It worked fine... but this is what coroutines are for*/
+/*
 class BlockSafeWorker {
   private val t = QueueWorker()
   fun doIfAvailable(op: Op) {
@@ -189,4 +192,4 @@ class BlockSafeWorker {
 	  println("BlockSafeWorker is working. Not scheduling op.")
 	}
   }
-}
+}*/

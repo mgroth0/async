@@ -1,5 +1,12 @@
 package matt.async.collect
 
+import matt.async.collect.list.SuspendList
+import matt.async.collect.list.SuspendMutableList
+import matt.async.collect.list.suspending
+import matt.async.collect.map.SuspendMap
+import matt.async.collect.map.SuspendMutableMap
+import matt.async.collect.map.suspending
+
 interface SuspendIterable<out E> {
   suspend operator fun iterator(): SuspendIterator<E>
 }
@@ -162,7 +169,7 @@ open class SuspendWrapIterator<E>(private val itr: Iterator<E>): SuspendIterator
 }
 
 
-class MappedSuspendIterator<S,T>(private val src: SuspendIterator<S>, private val op: (S) -> T): SuspendIterator<T> {
+class MappedSuspendIterator<S, T>(private val src: SuspendIterator<S>, private val op: (S)->T): SuspendIterator<T> {
   override suspend fun hasNext(): Boolean {
 	return src.hasNext()
   }
@@ -191,3 +198,31 @@ open class SuspendWrapMutableIterator<E>(private val itr: MutableIterator<E>): S
 }
 
 
+suspend inline fun <T, K, M: SuspendMutableMap<in K, SuspendMutableList<T>>> SuspendIterable<T>.groupByTo(
+  destination: M,
+  keySelector: (T)->K
+): M {
+  for (element in this) {
+	val key = keySelector(element)
+	val list = destination.getOrPut(key) { ArrayList<T>().suspending() }
+	list.add(element)
+  }
+  return destination
+}
+
+
+suspend inline fun <T, K> SuspendIterable<T>.groupBy(keySelector: (T) -> K): SuspendMap<K, out SuspendList<out T>> {
+  return groupByTo(LinkedHashMap<K, SuspendMutableList<T>>().suspending(), keySelector)
+}
+
+
+suspend inline fun <K, V> SuspendMutableMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V {
+  val value = get(key)
+  return if (value == null) {
+	val answer = defaultValue()
+	put(key, answer)
+	answer
+  } else {
+	value
+  }
+}
