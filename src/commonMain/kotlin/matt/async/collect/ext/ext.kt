@@ -1,6 +1,8 @@
 package matt.async.collect.ext
 
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import matt.async.collect.SuspendCollection
 import matt.async.collect.SuspendIterable
 import matt.async.collect.SuspendIterator
@@ -11,6 +13,14 @@ import matt.async.collect.list.SuspendWrapList
 import matt.async.collect.list.SuspendWrapMutableList
 import matt.async.collect.set.SuspendSet
 import matt.async.collect.set.SuspendWrapSet
+
+suspend public fun <T> SuspendIterator<T>.asFlow(): Flow<T> = flow {
+
+  while (hasNext()) {
+	emit(next())
+  }
+
+}
 
 @Suppress("UNCHECKED_CAST")
 suspend public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {

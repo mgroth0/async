@@ -144,6 +144,7 @@ open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>
 interface SuspendIterator<out E> {
   suspend operator fun hasNext(): Boolean
   suspend operator fun next(): E
+  fun toNonSuspendingIterator(): Iterator<E>
 }
 
 open class SuspendWrapIterator<E>(private val itr: Iterator<E>): SuspendIterator<E> {
@@ -154,6 +155,26 @@ open class SuspendWrapIterator<E>(private val itr: Iterator<E>): SuspendIterator
   override suspend fun next(): E {
 	return itr.next()
   }
+
+  override fun toNonSuspendingIterator(): Iterator<E> {
+	return itr
+  }
+}
+
+
+class MappedSuspendIterator<S,T>(private val src: SuspendIterator<S>, private val op: (S) -> T): SuspendIterator<T> {
+  override suspend fun hasNext(): Boolean {
+	return src.hasNext()
+  }
+
+  override suspend fun next(): T {
+	return op(src.next())
+  }
+
+  override fun toNonSuspendingIterator(): Iterator<T> {
+	TODO()
+  }
+
 }
 
 interface SuspendMutableIterator<E>: SuspendIterator<E> {
@@ -165,6 +186,7 @@ open class SuspendWrapMutableIterator<E>(private val itr: MutableIterator<E>): S
   override suspend fun remove() {
 	return itr.remove()
   }
+
 
 }
 
