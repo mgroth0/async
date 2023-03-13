@@ -136,6 +136,8 @@ class SuspendMutableEntryWrap<K,V>(override val entry: MutableMap.MutableEntry<K
 
 }
 
+fun <K,V> SuspendEntry<K,V>.toFakeSuspendMutableEntry() = FakeSuspendMutableEntry(this)
+
 class FakeSuspendMutableEntry<K,V>(e: SuspendEntry<K,V>): SuspendMutableEntry<K,V>, SuspendEntry<K,V> by e {
 
   override suspend fun setValue(newValue: V): V {

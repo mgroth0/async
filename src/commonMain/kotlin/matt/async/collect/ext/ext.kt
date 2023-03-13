@@ -15,6 +15,10 @@ import matt.async.collect.list.SuspendWrapMutableList
 import matt.async.collect.list.suspending
 import matt.async.collect.set.SuspendSet
 import matt.async.collect.set.SuspendWrapSet
+import matt.async.collect.set.suspending
+import matt.lang.function.SuspendConvert
+import kotlin.contracts.InvocationKind.UNKNOWN
+import kotlin.contracts.contract
 
 suspend public fun <T> SuspendIterator<T>.asFlow(): Flow<T> = flow {
 
@@ -33,10 +37,13 @@ suspend public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array
  * Applies the given [transform] function to each element of the original collection
  * and appends the results to the given [destination].
  */
-public inline suspend fun <T, R, C: SuspendMutableCollection<in R>> SuspendIterable<T>.mapTo(
+public suspend inline fun <T, R, C: SuspendMutableCollection<in R>> SuspendIterable<T>.mapTo(
   destination: C,
   transform: (T)->R
 ): C {
+  contract {
+	callsInPlace(transform, UNKNOWN)
+  }
   for (item in this)
 	destination.add(transform(item))
   return destination
@@ -50,6 +57,9 @@ public inline suspend fun <T, R, C: SuspendMutableCollection<in R>> SuspendItera
  * @sample samples.collections.Collections.Transformations.map
  */
 public suspend inline fun <T, R> SuspendIterable<T>.map(transform: (T)->R): SuspendList<R> {
+  contract {
+	callsInPlace(transform, UNKNOWN)
+  }
   val thingToMapTo = SuspendWrapMutableList(ArrayList<R>(collectionSizeOrDefault(10)))
   return mapTo(thingToMapTo, transform)
 }
@@ -296,4 +306,44 @@ suspend inline fun <T> SuspendIterable<T>.firstOrNull(predicate: (T)->Boolean): 
 	if (predicate(e)) return e
   }
   return null
+}
+
+
+suspend fun <E, R> SuspendIterable<E>.mapToSet(transform: SuspendConvert<E, R>) =
+  mapTo(mutableSetOf<R>().suspending()) {
+	transform.invoke(it)
+  }
+
+
+/**
+ * Adds all elements of the given [elements] collection to this [MutableCollection].
+ */
+suspend fun <T> SuspendMutableCollection<in T>.addAll(elements: SuspendIterable<T>): Boolean {
+  return when (elements) {
+	is SuspendCollection -> addAll(elements)
+	else                 -> {
+	  var result: Boolean = false
+	  val itr = elements.iterator()
+	  while (itr.hasNext()) {
+		if (add(itr.next())) result = true
+	  }
+	  result
+	}
+  }
+}
+
+suspend inline fun <T, R, C: SuspendMutableCollection<in R>> SuspendIterable<T>.flatMapTo(
+  destination: C,
+  transform: (T)->SuspendIterable<R>
+): C {
+  for (element in this) {
+	val list = transform(element)
+	destination.addAll(list)
+  }
+  return destination
+}
+
+
+suspend inline fun <T, R> SuspendIterable<T>.flatMap(transform: (T)->SuspendIterable<R>): SuspendList<R> {
+  return flatMapTo(ArrayList<R>().suspending(), transform)
 }

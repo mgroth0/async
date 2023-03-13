@@ -6,7 +6,6 @@ import matt.async.collect.list.suspending
 import matt.async.collect.map.SuspendMap
 import matt.async.collect.map.SuspendMutableMap
 import matt.async.collect.map.suspending
-import java.util.Objects
 import java.util.function.Predicate
 
 interface SuspendIterable<out E> {
@@ -90,6 +89,10 @@ open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>
 																				   SuspendMutableCollection<E> {
 
 
+  override suspend fun iterator(): SuspendMutableIterator<E> {
+	return col.iterator().suspending()
+  }
+
   override suspend fun add(element: E): Boolean {
 	return col.add(element)
   }
@@ -172,6 +175,8 @@ interface SuspendIterator<out E> {
   fun toNonSuspendingIterator(): Iterator<E>
 }
 
+fun <E> Iterator<E>.suspending() = SuspendWrapIterator(this)
+
 open class SuspendWrapIterator<E>(private val itr: Iterator<E>): SuspendIterator<E> {
   override suspend fun hasNext(): Boolean {
 	return itr.hasNext()
@@ -205,6 +210,8 @@ class MappedSuspendIterator<S, T>(private val src: SuspendIterator<S>, private v
 interface SuspendMutableIterator<E>: SuspendIterator<E> {
   suspend fun remove()
 }
+
+fun <E> MutableIterator<E>.suspending() = SuspendWrapMutableIterator(this)
 
 open class SuspendWrapMutableIterator<E>(private val itr: MutableIterator<E>): SuspendWrapIterator<E>(itr),
 																			   SuspendMutableIterator<E> {
