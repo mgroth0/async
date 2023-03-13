@@ -7,7 +7,7 @@ interface SuspendIterable<out E> {
 interface SuspendCollection<E>: SuspendIterable<E> {
   suspend fun size(): Int
 
-  suspend operator fun contains(element: E): Boolean
+  suspend fun contains(element: E): Boolean
 
   suspend fun containsAll(elements: SuspendCollection<E>): Boolean
   suspend fun isEmpty(): Boolean
@@ -154,7 +154,8 @@ interface SuspendMutableIterator<E>: SuspendIterator<E> {
   suspend fun remove()
 }
 
-open class SuspendWrapMutableIterator<E>(private val itr: MutableIterator<E>): SuspendWrapIterator<E>(itr), SuspendMutableIterator<E> {
+open class SuspendWrapMutableIterator<E>(private val itr: MutableIterator<E>): SuspendWrapIterator<E>(itr),
+																			   SuspendMutableIterator<E> {
   override suspend fun remove() {
 	return itr.remove()
   }
