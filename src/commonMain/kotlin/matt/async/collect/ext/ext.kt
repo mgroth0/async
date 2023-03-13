@@ -106,8 +106,8 @@ internal object EmptySuspendSet: SuspendSet<Nothing> {
 
   override suspend fun size(): Int = 0
   override suspend fun isEmpty(): Boolean = true
-  override fun toNonSuspendCollection(): Collection<Nothing> {
-    TODO()
+  suspend override fun toNonSuspendCollection(): Collection<Nothing> {
+	TODO()
   }
 
   override suspend fun contains(element: Nothing): Boolean = false

@@ -12,7 +12,7 @@ interface SuspendCollection<E>: SuspendIterable<E> {
   suspend fun containsAll(elements: SuspendCollection<E>): Boolean
   suspend fun isEmpty(): Boolean
 
-  fun toNonSuspendCollection(): Collection<E>
+  suspend fun toNonSuspendCollection(): Collection<E>
 }
 
 open class SuspendWrapCollection<E>(private val collection: Collection<E>): SuspendCollection<E> {
