@@ -134,6 +134,10 @@ internal object EmptySuspendIterator: SuspendListIterator<Nothing> {
   suspend override fun nextIndex(): Int = 0
   suspend override fun previousIndex(): Int = -1
   suspend override fun next(): Nothing = throw NoSuchElementException()
+  override fun toNonSuspendingIterator(): Iterator<Nothing> {
+    TODO("Not yet implemented")
+  }
+
   suspend override fun previous(): Nothing = throw NoSuchElementException()
 }
 

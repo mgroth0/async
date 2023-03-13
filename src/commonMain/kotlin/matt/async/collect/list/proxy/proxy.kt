@@ -73,6 +73,10 @@ class SuspendProxyList<S, T>(
 		return itr.next().toT()
 	  }
 
+	  override fun toNonSuspendingIterator(): Iterator<T> {
+		TODO("Not yet implemented")
+	  }
+
 	  suspend override fun nextIndex(): Int {
 		return itr.nextIndex()
 	  }
