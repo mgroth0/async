@@ -278,7 +278,7 @@ suspend fun <T> SuspendList<T>.first(): T {
   return this.get(0)
 }
 
-suspend inline fun <T> SuspendIterable<T>.first(predicate: (T)->Boolean): T {
+suspend inline fun <T> SuspendIterable<T>.first(predicate: (T)->Boolean = { true }): T {
   for (element in this) if (predicate(element)) return element
   throw NoSuchElementException("Collection contains no element matching the predicate.")
 }
