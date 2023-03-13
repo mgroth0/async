@@ -100,9 +100,9 @@ internal object EmptySuspendSet: SuspendSet<Nothing> {
   override fun toString(): String = "[]"
 
   override suspend fun size(): Int = 0
-  suspend override fun isEmpty(): Boolean = true
-  suspend override fun contains(element: Nothing): Boolean = false
-  suspend override fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
+  override suspend fun isEmpty(): Boolean = true
+  override suspend fun contains(element: Nothing): Boolean = false
+  override suspend fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
 
   suspend override fun iterator(): SuspendIterator<Nothing> = EmptySuspendIterator
 

@@ -124,7 +124,7 @@ open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>
 	val itr = col.iterator()
 	while (itr.hasNext()) {
 	  val n = itr.next()
-	  val b = n !in elements
+	  val b = !elements.contains(n)
 	  if (b) {
 		r = true
 		itr.remove()
