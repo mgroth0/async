@@ -11,6 +11,8 @@ interface SuspendCollection<E>: SuspendIterable<E> {
 
   suspend fun containsAll(elements: SuspendCollection<E>): Boolean
   suspend fun isEmpty(): Boolean
+
+  fun toNonSuspendCollection(): Collection<E>
 }
 
 open class SuspendWrapCollection<E>(private val collection: Collection<E>): SuspendCollection<E> {
@@ -36,6 +38,10 @@ open class SuspendWrapCollection<E>(private val collection: Collection<E>): Susp
 
   override suspend fun iterator(): SuspendIterator<E> {
 	return SuspendWrapIterator(collection.iterator())
+  }
+
+  override fun toNonSuspendCollection(): Collection<E> {
+	return collection
   }
 
 }

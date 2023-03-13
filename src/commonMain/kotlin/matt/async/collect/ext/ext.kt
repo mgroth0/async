@@ -12,6 +12,11 @@ import matt.async.collect.list.SuspendWrapMutableList
 import matt.async.collect.set.SuspendSet
 import matt.async.collect.set.SuspendWrapSet
 
+@Suppress("UNCHECKED_CAST")
+public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {
+  return toNonSuspendCollection().toTypedArray()
+}
+
 /**
  * Applies the given [transform] function to each element of the original collection
  * and appends the results to the given [destination].
@@ -101,6 +106,10 @@ internal object EmptySuspendSet: SuspendSet<Nothing> {
 
   override suspend fun size(): Int = 0
   override suspend fun isEmpty(): Boolean = true
+  override fun toNonSuspendCollection(): Collection<Nothing> {
+    TODO()
+  }
+
   override suspend fun contains(element: Nothing): Boolean = false
   override suspend fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
 
