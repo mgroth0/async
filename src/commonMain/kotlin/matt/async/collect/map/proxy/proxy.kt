@@ -10,7 +10,6 @@ import matt.async.collect.map.SuspendMutableEntry
 import matt.async.collect.map.SuspendMutableMap
 import matt.async.collect.map.toFakeSuspendMutableEntry
 import matt.async.collect.set.SuspendMutableSet
-import matt.model.data.proxy.map.ProxyMap
 import matt.model.op.convert.Converter
 
 
@@ -47,7 +46,7 @@ class SuspendProxyMap<SK: Any, SV: Any, TK: Any, TV: Any>(
 		TODO("Not yet implemented")
 	  }
 
-	  override suspend fun addAll(elements: SuspendCollection<SuspendMutableEntry<TK, TV>>): Boolean {
+	  override suspend fun addAll(elements: SuspendCollection<out SuspendMutableEntry<TK, TV>>): Boolean {
 		TODO("Not yet implemented")
 	  }
 
