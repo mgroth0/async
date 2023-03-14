@@ -29,7 +29,7 @@ suspend public fun <T> SuspendIterator<T>.asFlow(): Flow<T> = flow {
 }
 
 @Suppress("UNCHECKED_CAST")
-suspend public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {
+suspend public inline fun <reified T> SuspendCollection<out T>.toTypedArray(): Array<T> {
   return toNonSuspendCollection().toTypedArray()
 }
 

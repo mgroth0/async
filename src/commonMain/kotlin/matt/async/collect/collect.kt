@@ -58,7 +58,7 @@ open class SuspendWrapCollection<E>(private val collection: Collection<E>): Susp
 interface SuspendMutableCollection<E>: SuspendCollection<E> {
   suspend fun add(element: E): Boolean
 
-  suspend fun addAll(elements: SuspendCollection<E>): Boolean
+  suspend fun addAll(elements: SuspendCollection<out E>): Boolean
 
   suspend fun clear()
 
@@ -104,7 +104,7 @@ open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>
    *
    * @return `true` if any of the specified elements was added to the collection, `false` if the collection was not modified.
    */
-  override suspend fun addAll(elements: SuspendCollection<E>): Boolean {
+  override suspend fun addAll(elements: SuspendCollection<out E>): Boolean {
 	var r = false
 	for (e in elements) {
 	  if (col.add(e)) {

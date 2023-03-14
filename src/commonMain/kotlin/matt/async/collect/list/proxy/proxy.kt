@@ -21,7 +21,7 @@ class SuspendProxyList<S, T>(
 	innerList.clear()
   }
 
-  suspend override fun addAll(elements: SuspendCollection<T>): Boolean {
+  suspend override fun addAll(elements: SuspendCollection<out T>): Boolean {
 	return innerList.addAll(elements.map { it.toS() })
   }
 

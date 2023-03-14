@@ -133,7 +133,7 @@ class SuspendWrapMutableList<E>(private val list: MutableList<E>): SuspendWrapLi
 	return mutColSuper.add(element)
   }
 
-  override suspend fun addAll(elements: SuspendCollection<E>): Boolean {
+  override suspend fun addAll(elements: SuspendCollection<out E>): Boolean {
 	return mutColSuper.addAll(elements)
   }
 

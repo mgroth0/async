@@ -18,7 +18,7 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	err("tried to add in ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun addAll(elements: SuspendCollection<E>): Boolean {
+  suspend override fun addAll(elements: SuspendCollection<out E>): Boolean {
 	err("tried to addAll in ${FakeMutableSuspendList::class.simpleName}")
   }
 
