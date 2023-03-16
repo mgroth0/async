@@ -148,28 +148,28 @@ internal object EmptySuspendSet: SuspendSet<Nothing> {
 
   override suspend fun size(): Int = 0
   override suspend fun isEmpty(): Boolean = true
-  suspend override fun toNonSuspendCollection(): Collection<Nothing> {
+  override suspend  fun toNonSuspendCollection(): Collection<Nothing> {
 	TODO()
   }
 
   override suspend fun contains(element: Nothing): Boolean = false
   override suspend fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
 
-  suspend override fun iterator(): SuspendIterator<Nothing> = EmptySuspendIterator
+  override suspend  fun iterator(): SuspendIterator<Nothing> = EmptySuspendIterator
 
 }
 
 internal object EmptySuspendIterator: SuspendListIterator<Nothing> {
-  suspend override fun hasNext(): Boolean = false
-  suspend override fun hasPrevious(): Boolean = false
-  suspend override fun nextIndex(): Int = 0
-  suspend override fun previousIndex(): Int = -1
-  suspend override fun next(): Nothing = throw NoSuchElementException()
+  override suspend  fun hasNext(): Boolean = false
+  override suspend  fun hasPrevious(): Boolean = false
+  override suspend  fun nextIndex(): Int = 0
+  override suspend  fun previousIndex(): Int = -1
+  override suspend  fun next(): Nothing = throw NoSuchElementException()
   override fun toNonSuspendingIterator(): Iterator<Nothing> {
 	TODO("Not yet implemented")
   }
 
-  suspend override fun previous(): Nothing = throw NoSuchElementException()
+  override suspend  fun previous(): Nothing = throw NoSuchElementException()
 }
 
 
@@ -208,29 +208,29 @@ internal object EmptySuspendList: SuspendList<Nothing>, RandomAccess {
   override fun hashCode(): Int = 1
   override fun toString(): String = "[]"
 
-  suspend override fun size(): Int = 0
-  suspend override fun isEmpty(): Boolean = true
+  override suspend  fun size(): Int = 0
+  override suspend  fun isEmpty(): Boolean = true
   override suspend fun toNonSuspendCollection(): List<Nothing> {
 	TODO("Not yet implemented")
   }
 
-  suspend override fun contains(element: Nothing): Boolean = false
-  suspend override fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
+  override suspend  fun contains(element: Nothing): Boolean = false
+  override suspend  fun containsAll(elements: SuspendCollection<Nothing>): Boolean = elements.isEmpty()
 
-  suspend override fun get(index: Int): Nothing =
+  override suspend  fun get(index: Int): Nothing =
 	throw IndexOutOfBoundsException("Empty list doesn't contain element at index $index.")
 
-  suspend override fun indexOf(element: Nothing): Int = -1
-  suspend override fun lastIndexOf(element: Nothing): Int = -1
+  override suspend  fun indexOf(element: Nothing): Int = -1
+  override suspend  fun lastIndexOf(element: Nothing): Int = -1
 
-  suspend override fun iterator(): SuspendIterator<Nothing> = EmptySuspendIterator
-  suspend override fun listIterator(): SuspendListIterator<Nothing> = EmptySuspendIterator
-  suspend override fun listIterator(index: Int): SuspendListIterator<Nothing> {
+  override suspend  fun iterator(): SuspendIterator<Nothing> = EmptySuspendIterator
+  override suspend  fun listIterator(): SuspendListIterator<Nothing> = EmptySuspendIterator
+  override suspend  fun listIterator(index: Int): SuspendListIterator<Nothing> {
 	if (index != 0) throw IndexOutOfBoundsException("Index: $index")
 	return EmptySuspendIterator
   }
 
-  suspend override fun subList(fromIndex: Int, toIndex: Int): SuspendList<Nothing> {
+  override suspend  fun subList(fromIndex: Int, toIndex: Int): SuspendList<Nothing> {
 	if (fromIndex == 0 && toIndex == 0) return this
 	throw IndexOutOfBoundsException("fromIndex: $fromIndex, toIndex: $toIndex")
   }

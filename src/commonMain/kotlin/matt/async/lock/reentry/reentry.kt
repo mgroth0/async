@@ -1,4 +1,4 @@
-package matt.async.reentry
+package matt.async.lock.reentry
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

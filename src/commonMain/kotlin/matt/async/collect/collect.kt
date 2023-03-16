@@ -48,7 +48,7 @@ open class SuspendWrapCollection<E>(private val collection: Collection<E>): Susp
 	return SuspendWrapIterator(collection.iterator())
   }
 
-  suspend override fun toNonSuspendCollection(): Collection<E> {
+  override suspend  fun toNonSuspendCollection(): Collection<E> {
 	TODO()
   }
 

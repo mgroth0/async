@@ -54,7 +54,7 @@ open class SuspendMapWrap<K,V>(protected open val map: Map<K,V>): SuspendMap<K,V
 
 
 interface SuspendMutableMap<K, V>: SuspendMap<K, V> {
-  override suspend fun entries(): SuspendMutableSet<SuspendMutableEntry<K, V>>
+  override suspend fun entries(): SuspendMutableSet<out SuspendMutableEntry<K, V>>
 
   override suspend fun keys(): SuspendMutableSet<K>
 

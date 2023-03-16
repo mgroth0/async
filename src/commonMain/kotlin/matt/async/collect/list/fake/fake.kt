@@ -14,15 +14,15 @@ import matt.lang.err
 fun <E> SuspendList<E>.toSuspendingFakeMutableList() = FakeMutableSuspendList(this)
 
 class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E> {
-  suspend override fun add(element: E): Boolean {
+  override suspend  fun add(element: E): Boolean {
 	err("tried to add in ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun addAll(elements: SuspendCollection<out E>): Boolean {
+  override suspend  fun addAll(elements: SuspendCollection<out E>): Boolean {
 	err("tried to addAll in ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun clear() {
+  override suspend  fun clear() {
 	err("tried to clear in ${FakeMutableSuspendList::class.simpleName}")
   }
 
@@ -34,7 +34,7 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	err("tried to modify ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun iterator(): SuspendMutableIterator<E> {
+  override suspend  fun iterator(): SuspendMutableIterator<E> {
 	return SuspendFakeMutableIterator(list.iterator())
   }
 
@@ -74,7 +74,7 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	return list.isEmpty()
   }
 
-  suspend override fun toNonSuspendCollection(): MutableList<E> {
+  override suspend  fun toNonSuspendCollection(): MutableList<E> {
 	return list.toNonSuspendList().toFakeMutableList()
   }
 
@@ -90,15 +90,15 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	err("tried to modify ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun remove(element: E): Boolean {
+  override suspend  fun remove(element: E): Boolean {
 	err("tried to remove in ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun removeAll(elements: SuspendCollection<E>): Boolean {
+  override suspend  fun removeAll(elements: SuspendCollection<E>): Boolean {
 	err("tried to removeAll in ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  suspend override fun retainAll(elements: SuspendCollection<E>): Boolean {
+  override suspend  fun retainAll(elements: SuspendCollection<E>): Boolean {
 	err("tried to retainAll in ${FakeMutableSuspendList::class.simpleName}")
   }
 

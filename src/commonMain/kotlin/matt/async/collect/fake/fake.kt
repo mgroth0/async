@@ -20,12 +20,12 @@ open class SuspendFakeMutableIterator<E>(val itr: SuspendIterator<E>): SuspendIt
 
 class SuspendFakeMutableListIterator<E>(itr: SuspendListIterator<E>): SuspendListIterator<E> by itr,
 																	  SuspendMutableListIterator<E> {
-  suspend override fun add(element: E) = ILLEGAL
+  override suspend  fun add(element: E) = ILLEGAL
 
-  suspend override fun previous() = ILLEGAL
-  suspend override fun remove() = ILLEGAL
+  override suspend  fun previous() = ILLEGAL
+  override suspend  fun remove() = ILLEGAL
 
-  suspend override fun set(element: E) = ILLEGAL
+  override suspend  fun set(element: E) = ILLEGAL
 
 
 }
