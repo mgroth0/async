@@ -1,17 +1,15 @@
 {
   "type": "matt.mstruct.bj.BasicJvmOnlyMod",
-  "dependencies" : [
-
-	{
-	  "type" : "Lib",
-	  "cfg" :  "implementation",
-	  "key" :  "aparapi"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "api",
-	  "path" : ":k:log"
-	}
-  ],
-  "note" :         null
+  "dependencies": [
+    {
+      "type": "Lib",
+      "cfg": "implementation",
+      "key": "aparapi"
+    },
+    {
+      "type": "Project",
+      "cfg": "implementation",
+      "path": ":k:log"
+    }
+  ]
 }
