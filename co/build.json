@@ -1,0 +1,11 @@
+{
+  "type": "matt.mstruct.bj.MultiPlatformModule",
+  "jvm": {},
+  "dependencies": [
+    {
+      "type": "Lib",
+      "cfg": "commonMainApi",
+      "key": "kotlinx-coroutines"
+    }
+  ]
+}

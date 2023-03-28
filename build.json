@@ -1,32 +1,26 @@
 {
-  "type" :         "matt.mstruct.bj.MultiPlatformModule",
-  "jvm" :          {},
-  "dependencies" : [
-	{
-	  "type" : "Project",
-	  "cfg" :  "jvmMainApi",
-	  "path" : ":k:time"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "jvmMainApi",
-	  "path" : ":k:obs"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "jvmMainApi",
-	  "path" : ":k:collect"
-	},
-	{
-	  "type" : "Project",
-	  "cfg" :  "jvmMainApi",
-	  "path" : ":k:reflect"
-	},
-	{
-	  "type" : "Lib",
-	  "cfg" :  "commonMainApi",
-	  "key" :  "kotlinx-coroutines"
-	}
-  ],
-  "note" :         null
+  "type": "matt.mstruct.bj.MultiPlatformModule",
+  "jvm": {},
+  "dependencies": [
+    {
+      "type": "Project",
+      "cfg": "jvmMainApi",
+      "path": ":k:time"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmMainApi",
+      "path": ":k:obs"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmMainApi",
+      "path": ":k:collect"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmMainApi",
+      "path": ":k:reflect"
+    }
+  ]
 }
