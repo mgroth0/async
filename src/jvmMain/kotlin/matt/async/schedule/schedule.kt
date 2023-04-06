@@ -246,7 +246,7 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
 }
 
 class AccurateTimer(
-  name: String? = null,
+  name: String,
   logger: Logger = NONE,
   private val priority: MyThreadPriorities? = null
 ): MattTimer<AccurateTimerTask>(name, logger) {
