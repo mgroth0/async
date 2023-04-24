@@ -1,7 +1,6 @@
 package matt.async.queue
 
 import matt.async.thread.daemon
-import matt.lang.function.Op
 import matt.lang.go
 import matt.lang.preciseTime
 import matt.model.code.idea.ProceedingIdea
