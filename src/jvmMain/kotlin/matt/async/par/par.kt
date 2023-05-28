@@ -17,6 +17,8 @@ import kotlin.contracts.contract
 val GLOBAL_POOL_SIZE = RUNTIME.availableProcessors()
 val GLOBAL_POOL: ExecutorService by lazy { Executors.newFixedThreadPool(GLOBAL_POOL_SIZE) }
 
+
+
 @Suppress("unused") fun <T, R> Iterable<T>.parMap(op: (T)->R): List<R> {
   return map {
 	GLOBAL_POOL.submit(Callable {
