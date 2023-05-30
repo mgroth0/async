@@ -4,6 +4,7 @@ import matt.async.collect.SuspendMutableCollection
 import matt.async.collect.ext.map
 import matt.async.collect.ext.toSet
 import matt.async.collect.list.fake.toSuspendingFakeMutableList
+import matt.async.collect.list.suspending
 import matt.async.collect.map.SuspendEntry
 import matt.async.collect.map.SuspendMutableEntry
 import matt.async.collect.map.SuspendMutableMap
@@ -12,6 +13,7 @@ import matt.async.collect.set.SuspendMutableSet
 import matt.async.collect.set.fake.toSuspendingFakeMutableSet
 import matt.model.data.proxy.map.ImmutableProxyMap
 import matt.model.op.convert.Converter
+import kotlin.collections.Map.Entry
 
 
 fun <SK : Any, SV : Any, TK : Any, TV : Any> SuspendMutableMap<SK, SV>.proxy(
@@ -34,25 +36,49 @@ class SuspendProxyMap<SK : Any, SV : Any, TK : Any, TV : Any>(
     private fun TK.toSK() = keyConverter.convertToA(this)
     private fun TV.toSV() = valueConverter.convertToA(this)
 
-    override suspend fun entries(): SuspendMutableSet<out SuspendMutableEntry<TK, TV>> {
+    override suspend fun currentEntries(): SuspendMutableSet<out SuspendMutableEntry<TK, TV?>> {
 
-        return innerMap.entries().map { e ->
-            object : SuspendEntry<TK, TV> {
+        return innerMap.currentEntries().map { e ->
+            object : SuspendEntry<TK, TV?> {
                 override suspend fun key() = e.key().toTK()
-                override suspend fun value() = e.value().toTV()
+                override suspend fun value() = e.value()?.toTV()
             }.toFakeSuspendMutableEntry()
         }.toSet().toSuspendingFakeMutableSet()
 
 
     }
 
+    override fun entry(key: TK): SuspendMutableEntry<TK, TV?> {
+        val skKey = key.toSK()
+        val e = innerMap.entry(skKey)
+        return object : SuspendMutableEntry<TK, TV?> {
+            override suspend fun setValue(newValue: TV?): TV? {
+                return e.setValue(newValue?.toSV())?.toTV()
+            }
 
-    override suspend fun keys(): SuspendMutableSet<TK> = entries().map { it.key() }.toSet().toSuspendingFakeMutableSet()
+            override suspend fun key(): TK {
+                return key
+            }
+
+            override suspend fun value(): TV? {
+                return e.value()?.toTV()
+            }
+
+        }
+    }
+
+
+    override suspend fun keys(): SuspendMutableSet<TK> =
+        currentEntries().map { it.key() }.toSet().toSuspendingFakeMutableSet()
+
     override suspend fun size(): Int = innerMap.size()
     override suspend fun values(): SuspendMutableCollection<TV> =
-        entries().map { it.value() }.toSuspendingFakeMutableList()
+        snapshot().map { it.value }.suspending().toSuspendingFakeMutableList()
 
     override suspend fun clear() = innerMap.clear()
+    override suspend fun snapshot(): Set<Entry<TK, TV>> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun isEmpty() = innerMap.isEmpty()
     override suspend fun toNonSuspendMap(): Map<TK, TV> {

@@ -4,6 +4,7 @@ import matt.async.collect.SuspendCollection
 import matt.async.collect.SuspendMutableCollection
 import matt.async.collect.set.SuspendMutableSet
 import matt.async.collect.set.SuspendSet
+import kotlin.collections.Map.Entry
 
 /*@OptIn(
     ExperimentalSerializationApi::class,
@@ -41,7 +42,8 @@ class SuspendMapSerializer<K : Any, V : Any>(
 
 
 interface SuspendMap<K, V> {
-    suspend fun entries(): SuspendSet<out SuspendEntry<K, V>>
+    suspend fun snapshot(): Set<Map.Entry<K, V>>
+    suspend fun currentEntries(): SuspendSet<out SuspendEntry<K, V?>>
     suspend fun keys(): SuspendSet<K>
     suspend fun size(): Int
     suspend fun values(): SuspendCollection<V>
@@ -55,7 +57,15 @@ interface SuspendMap<K, V> {
 fun <K, V> Map<K, V>.suspending() = SuspendMapWrap(this)
 
 open class SuspendMapWrap<K, V>(protected open val map: Map<K, V>) : SuspendMap<K, V> {
-    override suspend fun entries(): SuspendSet<out SuspendEntry<K, V>> {
+    override suspend fun snapshot(): Set<Entry<K, V>> {
+        TODO("Not yet implemented")
+    }
+
+//    override fun snapshot(): Set<Map.Entry<K, V>> {
+//        TODO("Not yet implemented")
+//    }
+
+    override suspend fun currentEntries(): SuspendSet<out SuspendEntry<K, V?>> {
         TODO("Not yet implemented")
     }
 
@@ -94,7 +104,10 @@ open class SuspendMapWrap<K, V>(protected open val map: Map<K, V>) : SuspendMap<
 
 
 interface SuspendMutableMap<K, V> : SuspendMap<K, V> {
-    override suspend fun entries(): SuspendMutableSet<out SuspendMutableEntry<K, V>>
+
+    override suspend fun currentEntries(): SuspendMutableSet<out SuspendMutableEntry<K, V?>>
+
+    fun entry(key: K): SuspendMutableEntry<K, V?>
 
     override suspend fun keys(): SuspendMutableSet<K>
 
@@ -118,7 +131,10 @@ fun <K, V> MutableMap<K, V>.suspending() = SuspendMutableMapWrap(this)
 
 class SuspendMutableMapWrap<K, V>(override val map: MutableMap<K, V>) : SuspendMapWrap<K, V>(map),
     SuspendMutableMap<K, V> {
-    override suspend fun entries(): SuspendMutableSet<SuspendMutableEntry<K, V>> {
+    override fun entry(key: K): SuspendMutableEntry<K, V?> = TODO()
+
+    //    override suspend fun snapshot(): Set<Map.Entry<K, V>> = TODO()
+    override suspend fun currentEntries(): SuspendMutableSet<SuspendMutableEntry<K, V?>> {
         TODO("Not yet implemented")
     }
 
@@ -150,6 +166,17 @@ class SuspendMutableMapWrap<K, V>(override val map: MutableMap<K, V>) : SuspendM
     }
 }
 
+interface SuspendVal<T> {
+    suspend fun get(): T
+}
+
+interface SuspendVar<T> : SuspendVal<T> {
+    suspend fun set(t: T)
+}
+
+//interface DeletableSuspendVar<T>: SuspendVar<T> {
+//    fun delete()
+//}
 
 interface SuspendEntry<out K, out V> {
     suspend fun key(): K
@@ -168,8 +195,17 @@ open class SuspendEntryWrap<K, V>(protected open val entry: Map.Entry<K, V>) : S
     }
 }
 
-interface SuspendMutableEntry<K, V> : SuspendEntry<K, V> {
+interface SuspendMutableEntry<K, V> : SuspendEntry<K, V>, SuspendVar<V>/*, DeletableSuspendVar<V>*/ {
     suspend fun setValue(newValue: V): V
+    override suspend fun get(): V {
+        return value()
+    }
+
+    override suspend fun set(t: V) {
+        setValue(t)
+    }
+
+
 }
 
 fun <K, V> MutableMap.MutableEntry<K, V>.suspending() = SuspendMutableEntryWrap(this)
@@ -179,6 +215,10 @@ class SuspendMutableEntryWrap<K, V>(override val entry: MutableMap.MutableEntry<
     override suspend fun setValue(newValue: V): V {
         TODO("Not yet implemented")
     }
+/*
+    override fun delete() {
+        TODO("Not yet implemented")
+    }*/
 
 }
 
@@ -189,6 +229,9 @@ class FakeSuspendMutableEntry<K, V>(e: SuspendEntry<K, V>) : SuspendMutableEntry
     override suspend fun setValue(newValue: V): V {
         error("this is fake")
     }
-
+    /*
+        override fun delete() {
+            TODO("Not yet implemented")
+        }*/
 
 }
