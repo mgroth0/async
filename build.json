@@ -1,10 +1,11 @@
 {
   "type": "MultiPlatformModule",
   "jvm": {},
+  "js": "LIB",
   "dependencies": [
     {
       "type": "Project",
-      "cfg": "jvmMainApi",
+      "cfg": "commonMainApi",
       "path": ":k:time"
     },
     {
