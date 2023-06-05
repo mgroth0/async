@@ -4,19 +4,9 @@
   "js": "LIB",
   "dependencies": [
     {
-      "type": "Lib",
-      "cfg": "commonMainApi",
-      "key": "kotlinx-coroutines"
-    },
-    {
       "type": "Project",
       "cfg": "commonMainApi",
       "path": ":k:collect"
-    },
-    {
-      "type": "Project",
-      "cfg": "commonMainApi",
-      "path": ":k:model"
     },
     {
       "type": "Project",

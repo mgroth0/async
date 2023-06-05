@@ -11,11 +11,6 @@
     {
       "type": "Project",
       "cfg": "jvmMainApi",
-      "path": ":k:obs"
-    },
-    {
-      "type": "Project",
-      "cfg": "jvmMainApi",
       "path": ":k:collect"
     },
     {

@@ -5,6 +5,11 @@
       "type": "Project",
       "cfg": "api",
       "path": ":k:async"
+    },
+    {
+      "type": "Project",
+      "cfg": "api",
+      "path": ":k:obs"
     }
   ]
 }

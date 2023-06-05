@@ -13,7 +13,7 @@ import kotlin.contracts.contract
 fun <R> ExecutorService.use(op: ExecutorService.() -> R): R {
     val r = op()
     shutdown()
-    awaitTermination(Long.MAX_VALUE, DAYS)
+    require(awaitTermination(Long.MAX_VALUE, DAYS))
     return r
 }
 
@@ -33,8 +33,8 @@ fun <T, R> Sequence<T>.parFor(op: (T) -> R) = forEach {
 
 
 context(ExecutorService)
-fun <T, R> Iterable<T>.parMap(op: (T) -> R) = map {
-    submit {
+fun <T, R> Iterable<T>.parMap(op: (T) -> R): List<R> = map {
+    submit<R> {
         op(it)
     }
 }.toList().map { it.get() }
