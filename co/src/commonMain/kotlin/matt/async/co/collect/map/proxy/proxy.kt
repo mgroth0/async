@@ -77,7 +77,7 @@ class SuspendProxyMap<SK : Any, SV : Any, TK : Any, TV : Any>(
 
     override suspend fun clear() = innerMap.clear()
     override suspend fun snapshot(): Set<Entry<TK, TV>> {
-        TODO("Not yet implemented")
+        return toNonSuspendMap().entries
     }
 
     override suspend fun isEmpty() = innerMap.isEmpty()
