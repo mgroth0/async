@@ -9,7 +9,7 @@ import matt.lang.function.Op
 import matt.lang.massert
 import matt.log.NONE
 import matt.log.logger.Logger
-import matt.model.code.valjson.ValJson
+import matt.model.code.valjson.waitfor.WAIT_FOR_MS
 import matt.model.flowlogic.latch.SimpleLatch
 import matt.time.UnixTime
 import matt.time.dur.sleep
@@ -163,9 +163,7 @@ fun sleepUntil(systemMs: Long) {
 }
 
 
-val WAIT_FOR_MS by lazy {
-    ValJson.WAIT_FOR_MS
-}
+
 
 fun waitFor(l: () -> Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
 fun waitFor(sleepPeriod: Long, l: () -> Boolean) {

@@ -11,6 +11,7 @@ import matt.async.co.collect.map.SuspendMutableMap
 import matt.async.co.collect.map.toFakeSuspendMutableEntry
 import matt.async.co.collect.set.SuspendMutableSet
 import matt.async.co.collect.set.fake.toSuspendingFakeMutableSet
+import matt.collect.mapToSet
 import matt.model.data.proxy.map.ImmutableProxyMap
 import matt.model.op.convert.Converter
 import kotlin.collections.Map.Entry
@@ -73,11 +74,19 @@ class SuspendProxyMap<SK : Any, SV : Any, TK : Any, TV : Any>(
 
     override suspend fun size(): Int = innerMap.size()
     override suspend fun values(): SuspendMutableCollection<TV> =
+
         snapshot().map { it.value }.suspending().toSuspendingFakeMutableList()
 
     override suspend fun clear() = innerMap.clear()
     override suspend fun snapshot(): Set<Entry<TK, TV>> {
-        return toNonSuspendMap().entries
+        return innerMap.snapshot().mapToSet { e ->
+            object : Map.Entry<TK, TV> {
+                override val key = e.key.toTK()
+                override val value = e.value.toTV()
+
+            }
+        }
+//        toNonSuspendMap().entries
     }
 
     override suspend fun isEmpty() = innerMap.isEmpty()
