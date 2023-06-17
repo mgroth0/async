@@ -9,28 +9,18 @@ import kotlin.concurrent.thread
 fun <R> withFailableDaemonPool(op: ExecutorService.() -> R) = FailableDaemonPool().use(op)
 
 fun FailableDaemonPool(): ExecutorService = run {
-    val shutdownMonitor = {}
-    var gotShutDown = false
-    var pool: ExecutorService? = null
-    pool = Executors.newFixedThreadPool(
+    /*this didnt work because exceptions are not thrown inside the runnable itself. It is only thrown in the Future.get()*/
+    /*val shutdownMonitor = {}
+    var gotShutDown = false*/
+    /*var pool: ExecutorService? = null*/
+    /*pool = */Executors.newFixedThreadPool(
         NUM_LOGICAL_CORES
     ) { runnable ->
         thread(start = false, isDaemon = true) {
-            try {
-                runnable.run()
-            } catch (e: Throwable) {
-                synchronized(shutdownMonitor) {
-                    if (!gotShutDown) {
-                        pool!!.shutdownNow()
-                        gotShutDown = true
-                    }
-                }
-                throw e
-            }
+            runnable.run()
         }
     }
-
-    pool
+    /*pool*/
 }
 
 

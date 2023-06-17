@@ -18,17 +18,32 @@ fun <R> ExecutorService.use(op: ExecutorService.() -> R): R {
 }
 
 context(ExecutorService)
-fun <T, R> Iterable<T>.parFor(op: (T) -> R) = forEach {
+fun <T, R> Iterable<T>.parFor(op: (T) -> R): Unit = map {
     submit {
+        /*try {*/
         op(it)
+        /*}*/
+        /*    catch (e: Throwable) {
+                synchronized(shutdownMonitor) {
+                    if (!gotShutDown) {
+                        pool!!.shutdownNow()
+                        gotShutDown = true
+                    }
+                }
+                throw e
+            }*/
     }
-}
+}.onEach {
+    it.get() /*gotta get, or else exceptions will not be handled*/
+}.let { Unit }
 
 context(ExecutorService)
-fun <T, R> Sequence<T>.parFor(op: (T) -> R) = forEach {
+fun <T, R> Sequence<T>.parFor(op: (T) -> R) = map {
     submit {
         op(it)
     }
+}.toList().forEach {
+    it.get() /*gotta get, or else exceptions will not be handled*/
 }
 
 
