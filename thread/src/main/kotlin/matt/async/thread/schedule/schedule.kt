@@ -7,6 +7,7 @@ import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
 import matt.lang.function.Op
 import matt.lang.massert
+import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger
 import matt.model.code.valjson.waitfor.WAIT_FOR_MS
@@ -53,6 +54,12 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
             }
         }
     }
+
+    override fun skipNextWait(task: MyTimerTask) {
+        require(task == theTask)
+        skipNextSleep()
+    }
+
 }
 
 
@@ -70,7 +77,7 @@ class AccurateTimer(
                 logger.tab("beginning loop")
                 val n: AccurateTimerTask
                 val now: UnixTime
-                schedulingSem.with {
+                schedulingMonitor.sync {
                     n = tasks.first()
                     now = UnixTime()
                     printDebugInfo(n, now = now)
@@ -82,7 +89,7 @@ class AccurateTimer(
                         n.run()
                         if (!checkCancel(n)) {
                             logger.tab("rescheduling")
-                            schedulingSem.with {
+                            schedulingMonitor.sync {
                                 n.next = UnixTime() + n.delay
                                 tasks.sortBy { it.next!! }
                             }
@@ -101,6 +108,11 @@ class AccurateTimer(
             logger.tab("\t${(it.next!! - now)}")
         }
     }
+
+    override fun skipNextWait(task: MyTimerTask) {
+        (task as AccurateTimerTask).skipNextDelay()
+    }
+
 }
 
 
@@ -161,8 +173,6 @@ fun sleepUntil(systemMs: Long) {
         sleep(diff.milliseconds)
     }
 }
-
-
 
 
 fun waitFor(l: () -> Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
@@ -249,7 +259,7 @@ class AccurateTimerTask(
 ) {
     internal var next: UnixTime? = null
     fun skipNextDelay() {
-        timer!!.schedulingSem.with {
+        timer!!.schedulingMonitor.sync {
             next = UnixTime()
             timer!!.tasks.sortBy { (it as AccurateTimerTask).next }
         }
@@ -268,31 +278,35 @@ abstract class MattTimer<T : MyTimerTask>(
         else super.toString()
     }
 
-    internal val schedulingSem = Semaphore(1)
+    internal val schedulingMonitor = object {}
 
     internal open val tasks = mutableListOf<T>()
 
     fun schedule(
         task: T,
         zeroDelayFirst: Boolean = false
-    ) = schedulingSem.with {
+    ) = schedulingMonitor.sync {
         task.timer = this
         if (task is AccurateTimerTask) {
             task.next = UnixTime() + task.delay
         }
-        if (zeroDelayFirst && this is FullDelayBeforeEveryExecutionTimer) {
-            skipNextSleep()
-        }
+
         tasks += task
         if (this is AccurateTimer) {
             tasks.sortBy { it.next!!.duration }
         }
         if (tasks.size == 1) start()
+        if (zeroDelayFirst) {
+            skipNextWait(task)
+        }
     }
+
 
     abstract fun start()
 
-    fun checkCancel(task: T): Boolean = schedulingSem.with {
+    abstract fun skipNextWait(task: MyTimerTask)
+
+    fun checkCancel(task: T): Boolean = schedulingMonitor.sync {
         if (task.cancelled) {
             tasks.remove(task)
             task.mightNotBeDoneLatch.open()

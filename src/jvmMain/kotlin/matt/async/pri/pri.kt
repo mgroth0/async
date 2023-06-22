@@ -11,7 +11,7 @@ enum class MyThreadPriorities {
     DELETING_OLD_CACHE,
     CREATING_NEW_CACHE,
     DEFAULT,
-    NOT_IN_USE6,
+    DEBUG_GREATER_THAN_DEFAULT,
     NOT_IN_USE7,
     NOT_IN_USE8,
     NOT_IN_USE9,
