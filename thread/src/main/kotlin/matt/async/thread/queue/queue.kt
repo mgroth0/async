@@ -145,7 +145,7 @@ class QueueWorker(name: String? = null): QueueWorkerInter {
 	  }
 	}
   }
-  private var catchUpLatch = SimpleLatch().openned()
+  private var catchUpLatch = SimpleLatch().opened()
   fun letItCatchUp() = catchUpLatch.await()
 
 
