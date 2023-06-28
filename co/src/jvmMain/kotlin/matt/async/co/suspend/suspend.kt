@@ -30,6 +30,11 @@ class RealSuspendLazy<T>(private val op: suspend () -> T) {
             value!!.value
         }
     }
+
+    suspend operator fun invoke(): T {
+        return get()
+    }
+
 }
 
 
