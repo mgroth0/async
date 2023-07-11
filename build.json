@@ -1,7 +1,7 @@
 {
   "type": "MultiPlatformModule",
   "jvm": {},
-  "js": "LIB",
+  "js": {"type":"lib"},
   "dependencies": [
     {
       "type": "Project",

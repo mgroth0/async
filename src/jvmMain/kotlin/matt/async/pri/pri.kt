@@ -3,6 +3,7 @@ package matt.async.pri
 import matt.async.pri.MyThreadPriorities.DEFAULT
 import matt.async.pri.MyThreadPriorities.NOT_IN_USE1
 import matt.async.pri.MyThreadPriorities.NOT_IN_USE10
+import matt.lang.require.requireEquals
 
 enum class MyThreadPriorities {
     ZERO_BAD,
@@ -19,7 +20,7 @@ enum class MyThreadPriorities {
 }
 
 val a = 1.apply {
-    require(DEFAULT.ordinal == Thread.NORM_PRIORITY)
-    require(NOT_IN_USE1.ordinal == Thread.MIN_PRIORITY)
-    require(NOT_IN_USE10.ordinal == Thread.MAX_PRIORITY)
+    requireEquals(DEFAULT.ordinal, Thread.NORM_PRIORITY)
+    requireEquals(NOT_IN_USE1.ordinal, Thread.MIN_PRIORITY)
+    requireEquals(NOT_IN_USE10.ordinal, Thread.MAX_PRIORITY)
 }

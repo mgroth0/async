@@ -7,6 +7,9 @@ import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
 import matt.lang.function.Op
 import matt.lang.massert
+import matt.lang.require.requireEquals
+import matt.lang.require.requireIs
+import matt.lang.require.requireNotEqual
 import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger
@@ -21,7 +24,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /*Not at all for accurate frequencies. The purpose of this is to be as little demanding as possible.*/
-class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = NONE) :
+class FullDelayBeforeEveryExecutionTimer(
+    name: String? = null,
+    logger: Logger = NONE
+) :
     MattTimer<MyTimerTask>(name, logger) {
 
     companion object {
@@ -41,7 +47,7 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
         daemon(name = "FullDelayBeforeEveryExecutionTimer Thread ${nextThreadID.getAndIncrement()}") {
             someLabel@ while (tasks.isNotEmpty()) {
                 val task = theTask
-                require(task != null)
+                requireNotNull(task)
                 if (checkCancel(task)) break
                 if (!skipNextSleepFlag) {
                     logger += "sleeping $this"
@@ -56,7 +62,7 @@ class FullDelayBeforeEveryExecutionTimer(name: String? = null, logger: Logger = 
     }
 
     override fun skipNextWait(task: MyTimerTask) {
-        require(task == theTask)
+        requireEquals(task, theTask)
         skipNextSleep()
     }
 
@@ -100,7 +106,10 @@ class AccurateTimer(
         }
     }
 
-    private fun printDebugInfo(nextTask: AccurateTimerTask, now: UnixTime) {
+    private fun printDebugInfo(
+        nextTask: AccurateTimerTask,
+        now: UnixTime
+    ) {
         logger += ("DEBUGGING $this")
         logger.tab("nextTask=${nextTask}")
         logger.tab("nexts (rel to now):")
@@ -147,7 +156,9 @@ class ThreadInterface {
 
 @Suppress("unused")
 fun IntRange.oscillate(
-    thread: Boolean = false, periodMs: Long? = null, op: (Int) -> Unit
+    thread: Boolean = false,
+    periodMs: Long? = null,
+    op: (Int) -> Unit
 ): Canceller {
     var i = start - step
     var increasing = true
@@ -176,7 +187,10 @@ fun sleepUntil(systemMs: Long) {
 
 
 fun waitFor(l: () -> Boolean): Unit = waitFor(WAIT_FOR_MS.toLong(), l)
-fun waitFor(sleepPeriod: Long, l: () -> Boolean) {
+fun waitFor(
+    sleepPeriod: Long,
+    l: () -> Boolean
+) {
     while (!l()) {
         sleep(sleepPeriod.milliseconds)
     }
@@ -365,14 +379,17 @@ fun every(
         onlyIf = onlyIf,
         minRateMillis = minRate?.inWholeMilliseconds
     ).also {
-        require(theTimer is FullDelayBeforeEveryExecutionTimer)
+        requireIs<FullDelayBeforeEveryExecutionTimer>(theTimer)
         theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
     }
     return task
 }
 
 
-class SchedulingDaemon(resolution: Duration, name: String? = null) {
+class SchedulingDaemon(
+    resolution: Duration,
+    name: String? = null
+) {
     private val thread = daemon(name = name) {
         while (true) {
             sleep(resolution)
@@ -399,7 +416,10 @@ class SchedulingDaemon(resolution: Duration, name: String? = null) {
     private var tasks = mutableListOf<Pair<UnixTime, Op>>()
 
     @Synchronized
-    fun schedule(time: UnixTime, op: Op) {
+    fun schedule(
+        time: UnixTime,
+        op: Op
+    ) {
         tasks += time to op
         takingUpMemory = true
     }
