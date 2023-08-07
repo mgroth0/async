@@ -1,22 +1,30 @@
 {
-  "type": "MultiPlatformModule",
-  "jvm": {},
-  "js": {"type":"lib"},
-  "dependencies": [
-    {
-      "type": "Project",
-      "cfg": "commonMainApi",
-      "path": ":k:time"
+    "type": "MultiPlatformModule",
+    "dependencies": [
+        {
+            "type": "Project",
+            "cfg": "commonMainApi",
+            "path": ":k:time"
+        },
+        {
+            "type": "Project",
+            "cfg": "jvmMainApi",
+            "path": ":k:collect"
+        },
+        {
+            "type": "Project",
+            "cfg": "jvmMainApi",
+            "path": ":k:reflect"
+        },
+        {
+            "type": "Project",
+            "cfg": "jvmTestImplementation",
+            "path": ":k:test"
+        }
+    ],
+    "jvm": {
     },
-    {
-      "type": "Project",
-      "cfg": "jvmMainApi",
-      "path": ":k:collect"
-    },
-    {
-      "type": "Project",
-      "cfg": "jvmMainApi",
-      "path": ":k:reflect"
+    "js": {
+        "type": "lib"
     }
-  ]
 }

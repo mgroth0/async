@@ -42,10 +42,10 @@ class LambdaOutputStream(private val op: (Int) -> Unit) : OutputStream() {
     }
 }
 
-fun byteArrayWithDefaultJavaioBufferedOutputStreamSize() = ByteArray(8192)
+fun byteArrayWithDefaultJavaIoBufferedOutputStreamSize() = ByteArray(8192)
 
 class LambdaBufferedOutputStream(private val op: (String) -> Unit) : OutputStream() {
-    private var buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+    private var buffer = byteArrayWithDefaultJavaIoBufferedOutputStreamSize()
     private var index = 0
     override fun write(b: Int) {
         buffer[index++] = b.toByte()
@@ -53,13 +53,13 @@ class LambdaBufferedOutputStream(private val op: (String) -> Unit) : OutputStrea
 
     override fun flush() {
         op(String(buffer))
-        buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+        buffer = byteArrayWithDefaultJavaIoBufferedOutputStreamSize()
         index = 0
     }
 }
 
 class LambdaLineOutputStream(private val op: (String) -> Unit) : OutputStream() {
-    private var buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+    private var buffer = byteArrayWithDefaultJavaIoBufferedOutputStreamSize()
     private var index = 0
     override fun write(b: Int) {
         if (index == buffer.size - 1) {
@@ -85,7 +85,7 @@ class LambdaLineOutputStream(private val op: (String) -> Unit) : OutputStream() 
             NEW_LINE_STRINGS.firstOrNull { rest.startsWith(it) }?.go { rest = rest.removePrefix(it) }
             stringBuffer = rest
         }
-        buffer = byteArrayWithDefaultJavaioBufferedOutputStreamSize()
+        buffer = byteArrayWithDefaultJavaIoBufferedOutputStreamSize()
         index = 0
     }
 }

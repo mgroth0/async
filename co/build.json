@@ -1,7 +1,5 @@
 {
   "type": "MultiPlatformModule",
-  "jvm": {},
-  "js": {"type":"lib"},
   "dependencies": [
     {
       "type": "Project",
@@ -17,6 +15,21 @@
       "type": "Project",
       "cfg": "commonMainApi",
       "path": ":k:progress"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmTestImplementation",
+      "path": ":k:test"
+    },
+    {
+      "type": "Lib",
+      "cfg": "jvmTestImplementation",
+      "key": "kotlinx-coroutines-test"
     }
-  ]
+  ],
+  "jvm": {
+  },
+  "js": {
+    "type": "lib"
+  }
 }

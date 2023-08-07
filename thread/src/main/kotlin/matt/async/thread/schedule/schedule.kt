@@ -12,7 +12,7 @@ import matt.lang.require.requireIs
 import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger
-import matt.model.code.valjson.waitfor.WAIT_FOR_MS
+import matt.model.code.vals.waitfor.WAIT_FOR_MS
 import matt.model.flowlogic.latch.SimpleLatch
 import matt.time.UnixTime
 import matt.time.dur.sleep
