@@ -19,6 +19,11 @@
     {
       "type": "Project",
       "cfg": "jvmTestImplementation",
+      "path": ":k:test:co"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmTestImplementation",
       "path": ":k:test"
     },
     {
