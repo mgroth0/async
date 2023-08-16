@@ -2,6 +2,7 @@ package matt.async.job
 
 import matt.async.bed.Bed
 import matt.collect.queue.pollUntilEnd
+import matt.lang.model.cancel.Cancellable
 import matt.lang.require.requireNot
 import matt.lang.sync
 import matt.model.code.idea.ProceedingIdea
@@ -17,7 +18,7 @@ class RepeatableDelayableJob(
     val name: String? = null,
     refreshRate: Duration,
     val op: () -> Unit
-) : ProceedingIdea {
+) : ProceedingIdea, Cancellable {
 
     override fun toString() = toStringBuilder(::name)
 
@@ -87,7 +88,7 @@ class RepeatableDelayableJob(
     private val bed = Bed()
     private var cancelled = false
 
-    fun cancel() {
+    override fun cancel() {
         cancelled = true
     }
 
