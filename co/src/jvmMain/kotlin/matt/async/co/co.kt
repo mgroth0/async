@@ -6,12 +6,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
-import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 
 
 fun CoroutineScope.blockAndJoin() {
-    val latch = SimpleLatch()
+    val latch = SimpleThreadLatch()
     val job = coroutineContext.job
     job.invokeOnCompletion {
         latch.open()
@@ -22,7 +22,7 @@ fun CoroutineScope.blockAndJoin() {
 
 
 fun Job.blockAndJoin() {
-    val latch = SimpleLatch()
+    val latch = SimpleThreadLatch()
     invokeOnCompletion {
         latch.open()
     }

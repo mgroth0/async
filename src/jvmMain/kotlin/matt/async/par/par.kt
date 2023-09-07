@@ -1,13 +1,10 @@
 package matt.async.par
 
 import matt.async.safe.with
-import matt.lang.NUM_LOGICAL_CORES
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit.DAYS
-import kotlin.concurrent.thread
 import kotlin.contracts.contract
 
 fun <R> ExecutorService.use(op: ExecutorService.() -> R): R {
@@ -123,19 +120,3 @@ fun <K, V> Sequence<K>.parAssociateWith(op: (K) -> V): FutureMap<K, V> {
     return FutureMap(r, futures)
 }
 
-fun <K, V> Sequence<K>.parChunkAssociateWith(
-    numThreads: Int? = null, op: (K) -> V
-): Map<K, V> {/*ArrayList(this.toList()).spliterator().*/
-    val r = ConcurrentHashMap<K, V>()
-    val list = this.toList()
-    list.chunked(kotlin.math.ceil(list.size.toDouble() / (numThreads ?: NUM_LOGICAL_CORES)).toInt()).map {
-        thread {
-            it.forEach {
-                r[it] = op(it)
-            }
-        }
-    }.forEach {
-        it.join()
-    }
-    return r
-}

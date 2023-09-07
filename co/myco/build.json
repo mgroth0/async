@@ -1,0 +1,46 @@
+{
+  "type": "MultiPlatformModule",
+  "dependencies": [
+    {
+      "type": "Project",
+      "cfg": "jvmMainImplementation",
+      "path": ":k:lang"
+    },
+    {
+      "type": "Lib",
+      "cfg": "jvmMainImplementation",
+      "key": "kt-stdlib"
+    },
+    {
+      "type": "Lib",
+      "cfg": "jvmMainImplementation",
+      "key": "kotlinx-coroutines"
+    },
+    {
+      "type": "Lib",
+      "cfg": "jvmMainApi",
+      "key": "atomicfu"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmTestImplementation",
+      "path": ":k:test:co"
+    },
+    {
+      "type": "Project",
+      "cfg": "jvmTestImplementation",
+      "path": ":k:test"
+    },
+    {
+      "type": "Lib",
+      "cfg": "jvmTestImplementation",
+      "key": "kotlinx-coroutines-test"
+    }
+  ],
+  "jvm": {
+    "friendly": true
+  },
+  "js": {
+    "type": "lib"
+  }
+}

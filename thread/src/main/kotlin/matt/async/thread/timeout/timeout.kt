@@ -3,7 +3,7 @@ package matt.async.thread.timeout
 import matt.async.thread.daemon
 import matt.lang.function.Op
 import matt.model.code.errreport.ThrowReport
-import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.time.dur.sleep
 import java.lang.Thread.UncaughtExceptionHandler
 import kotlin.time.Duration
@@ -26,10 +26,13 @@ private val timeoutDaemonExecutor by lazy {
 
 */
 
-fun timeoutDaemon(timeout: Duration, op: Op): Thread {
+fun timeoutDaemon(
+    timeout: Duration,
+    op: Op
+): Thread {
     var timeoutThread: Thread? = null
-    val timeoutThreadInitialized = SimpleLatch()
-    val mainThreadStarted = SimpleLatch()
+    val timeoutThreadInitialized = SimpleThreadLatch()
+    val mainThreadStarted = SimpleThreadLatch()
     val mainThread = calmWhenInterruptedDaemon {
         mainThreadStarted.open()
         op()
@@ -56,7 +59,7 @@ fun calmWhenInterruptedDaemon(op: Op): Thread {
             println("$d was interrupted")
         }
     }
-    d = daemon(start = false) {
+    d = daemon(start = false, name = "calmWhenInterruptedDaemon") {
         theOp()
     }
     d.uncaughtExceptionHandler = MellowInterruptsHandler
@@ -66,7 +69,10 @@ fun calmWhenInterruptedDaemon(op: Op): Thread {
 
 /*this was the old way*/
 object MellowInterruptsHandler : UncaughtExceptionHandler {
-    override fun uncaughtException(t: Thread?, e: Throwable?) {
+    override fun uncaughtException(
+        t: Thread?,
+        e: Throwable?
+    ) {
         if (e is InterruptedException) {
             println("$t was interrupted")
         } else {

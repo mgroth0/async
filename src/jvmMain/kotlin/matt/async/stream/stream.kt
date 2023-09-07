@@ -1,39 +1,10 @@
 package matt.async.stream
 
 import matt.lang.go
-import matt.lang.require.requireIn
+import matt.model.code.output.ActualOutputStreams
 import matt.prim.str.NEW_LINE_CHARS
 import matt.prim.str.NEW_LINE_STRINGS
-import java.io.BufferedReader
 import java.io.OutputStream
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
-import java.io.UncheckedIOException
-import kotlin.concurrent.thread
-
-fun threadedPipedOutput(
-    readOp: BufferedReader.() -> Unit,
-    pipeBrokenOp: UncheckedIOException.() -> Unit
-) =
-    PipedOutputStream(
-        threadedPipedInput(readOp, pipeBrokenOp)
-    )
-
-fun threadedPipedInput(
-    readOp: BufferedReader.() -> Unit,
-    pipeBrokenOp: UncheckedIOException.() -> Unit
-): PipedInputStream {
-    return PipedInputStream().apply {
-        thread {
-            try {
-                bufferedReader().readOp()
-            } catch (e: UncheckedIOException) {
-                requireIn("Pipe broken", e.toString())
-                e.pipeBrokenOp()
-            }
-        }
-    }
-}
 
 
 class LambdaOutputStream(private val op: (Int) -> Unit) : OutputStream() {
@@ -91,16 +62,16 @@ class LambdaLineOutputStream(private val op: (String) -> Unit) : OutputStream() 
 }
 
 
-fun <R> stringPipe(
-    giveOp: (OutputStream) -> Unit,
-    takeOp: (String) -> R
-): R {
-    val o = PipedOutputStream()
-    val i = PipedInputStream(o)
-    thread { giveOp(o) }
-    val reader = i.bufferedReader()
-    val text = reader.readText()
-    val r = takeOp(text)
-    return r
-}
+class PrefixedStreams(
+    private val outPrefix: String,
+    private val errPrefix: String
+) : ActualOutputStreams {
+    constructor(prefix: String) : this(outPrefix = prefix, errPrefix = "$prefix-ERR")
 
+    override val out = LambdaLineOutputStream {
+        println("GRADLE $outPrefix:${it}")
+    }
+    override val err = LambdaLineOutputStream {
+        println("GRADLE $errPrefix:${it}")
+    }
+}

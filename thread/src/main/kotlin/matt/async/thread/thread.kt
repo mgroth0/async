@@ -1,6 +1,13 @@
+@file:Suppress("ktlint:matt:no-disallowed-imports-thread")
+
 package matt.async.thread
 
+
+
 import matt.async.pri.MyThreadPriorities
+import matt.lang.function.Op
+import matt.lang.service.ThreadProvider
+import matt.lang.shutdown.preaper.ProcessReaper
 import matt.log.textart.TEXT_BAR
 import matt.model.code.errreport.Report
 import kotlin.concurrent.thread
@@ -33,27 +40,49 @@ fun aliveDaemonThreads() = aliveThreads().filter { it.isDaemon }
 fun aliveNonDaemonThreads() = aliveThreads().filter { !it.isDaemon }
 
 fun <R> R.runInThread(op: R.() -> Unit) {
-    thread {
+    namedThread("runInThread Thread") {
         op()
     }
 }
 
 fun <R> R.runInDaemon(op: R.() -> Unit) {
-    daemon {
+    daemon("runInDaemon Thread") {
         op()
     }
 }
 
 /*todo: reinforces my misconception than any thread() will not be daemon. In fact, whether or not thread is initially daemon depends on parent thread I'm pretty sure*/
 fun daemon(
-    name: String? = null,
+    name: String,
     start: Boolean = true,
     priority: MyThreadPriorities? = null,
     block: () -> Unit
 ): Thread {
-    return thread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
+    return namedThread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
         block()
     }
 }
 
+/*enforcing thread naming*/
+fun namedThread(
+    name: String,
+    start: Boolean = true,
+    isDaemon: Boolean = false,
+    priority: Int = -1,
+    block: () -> Unit
+) = thread(name = name, block = block, start = start, isDaemon = isDaemon, priority = priority)
 
+
+object TheThreadProvider : ThreadProvider {
+    override fun namedThread(
+        name: String,
+        isDaemon: Boolean,
+        start: Boolean,
+        block: Op
+    ) = matt.async.thread.namedThread(name = name, isDaemon = isDaemon, start = start, block = block)
+
+}
+
+val TheProcessReaper by lazy {
+    ProcessReaper(TheThreadProvider)
+}

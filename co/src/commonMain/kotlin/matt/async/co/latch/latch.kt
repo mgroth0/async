@@ -1,0 +1,102 @@
+package matt.async.co.latch
+
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
+import matt.lang.anno.OnlySynchronizedOnJvm
+import matt.lang.go
+import matt.model.flowlogic.await.SuspendAwaitable
+import matt.model.flowlogic.latch.LatchAwaitResult
+import matt.model.flowlogic.latch.LatchAwaitResult.LATCH_OPENED
+import matt.model.flowlogic.latch.LatchAwaitResult.TIMEOUT
+import matt.model.flowlogic.latch.LatchCancelled
+import matt.model.flowlogic.latch.SimpleLatch
+import kotlin.time.Duration
+
+
+class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch {
+    private var failure: LatchCancelled? = null
+
+
+    fun cancel(e: Throwable? = null) {
+        if (failure != null) {
+            println("warning: latch already has failure")
+        }
+        failure = LatchCancelled(cause = e)
+        open()
+    }
+
+    fun cancel(message: String) {
+        if (failure != null) {
+            println("warning: latch already has failure")
+        }
+        failure = LatchCancelled(message = message)
+        open()
+    }
+
+
+    private val mutex = Mutex(locked = true)
+
+    /*private val sem = Semaphore(permits = 1, acquiredPermits = 1)*/
+    override suspend fun await() {/*mutex.unlock()*//*latch.await()*/
+        mutex.withLock { }
+        failure?.go { throw it }
+    }
+
+    suspend fun await(timeout: Duration): LatchAwaitResult {
+
+
+        val result = withTimeoutOrNull(
+            timeout
+        ) {
+            mutex.withLock { }
+        }
+
+
+        return if (result != null) {
+            failure?.go { throw it }
+            LATCH_OPENED
+        } else {
+            TIMEOUT
+        }
+    }
+
+    suspend fun awaitOrThrow(timeout: Duration) {
+        when (await(timeout)) {
+            LATCH_OPENED -> Unit
+            TIMEOUT      -> throw Exception("timeout after waiting $timeout for $this")
+        }
+    }
+
+    @OnlySynchronizedOnJvm
+    override fun open() {
+        if (mutex.isLocked) {
+            mutex.unlock()
+        }
+    }
+//
+//    fun play(scope: CoroutineScope) {
+//
+//        scope.coroutineContext.apply {
+//            await()
+//        }
+//        scope.apply {
+//            await()
+//        }
+//    }
+//    override fun awaitBlocking() {
+//        runBlocking {
+//
+//        }
+//        MyScope().launch {
+//            await()
+//        }.join()
+//        await()
+//    }
+
+    val isOpen get() = !isClosed
+    val isClosed get() = mutex.isLocked
+    fun opened() = apply {
+        open()
+    }
+}

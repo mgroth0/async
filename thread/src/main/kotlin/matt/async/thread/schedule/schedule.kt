@@ -1,8 +1,11 @@
 package matt.async.thread.schedule
 
+import matt.async.bed.RepeatingJobBase
 import matt.async.pri.MyThreadPriorities
 import matt.async.safe.with
 import matt.async.thread.daemon
+import matt.async.thread.executors.ThreadNamingExecutor
+import matt.async.thread.namedThread
 import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
 import matt.lang.function.Op
@@ -13,12 +16,11 @@ import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger
 import matt.model.code.vals.waitfor.WAIT_FOR_MS
-import matt.model.flowlogic.latch.SimpleLatch
+import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -172,7 +174,7 @@ fun IntRange.oscillate(
         }
         inter.markComplete()
     }
-    if (thread) thread { f() } else f()
+    if (thread) namedThread("oscillate Thread") { f() } else f()
     return inter.canceller
 }
 
@@ -209,7 +211,7 @@ open class MyTimerTask(
     var cancelled = false
         private set
 
-    internal val mightNotBeDoneLatch = SimpleLatch()
+    internal val mightNotBeDoneLatch = SimpleThreadLatch()
 
     fun simplyRunOpUnsafe() = op()
 
@@ -242,10 +244,10 @@ open class MyTimerTask(
 
     var timer: MattTimer<*>? = null
 
-    private val latches = mutableListOf<SimpleLatch>()
+    private val latches = mutableListOf<SimpleThreadLatch>()
 
     fun waitForNextRunToStartAndFinish() {
-        val latch = SimpleLatch()
+        val latch = SimpleThreadLatch()
         synchronized(latches) {
             latches.add(latch)
         }
@@ -338,7 +340,7 @@ fun after(
     daemon: Boolean = false,
     op: () -> Unit,
 ) {
-    thread(isDaemon = daemon) {
+    namedThread(isDaemon = daemon, name = "after Thread") {
         sleep(d/*.toKotlinDuration()*/)
         op()
     }
@@ -389,7 +391,7 @@ class SchedulingDaemon(
     resolution: Duration,
     name: String? = null
 ) {
-    private val thread = daemon(name = name) {
+    private val thread = daemon(name = name ?: "SchedulingDaemon Thread") {
         while (true) {
             sleep(resolution)
             val time = UnixTime()
@@ -424,3 +426,23 @@ class SchedulingDaemon(
     }
 }
 
+
+class RepeatingThreadJob(
+    private val name: String,
+    private val interJobInterval: Duration = 10.milliseconds,
+    private val op: Op
+) : RepeatingJobBase() {
+    private var cancelled = false
+    override fun protectedStart() {
+        ThreadNamingExecutor.namedExecution(name) {
+            while (!cancelled) {
+                op()
+                sleep(interJobInterval)
+            }
+        }
+    }
+
+    override fun signalToStop() {
+        cancelled = true
+    }
+}

@@ -4,9 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import matt.async.co.await.SuspendLoadedValueSlot
-import matt.collect.itr.areAllTheSame
 import matt.collect.itr.iterateM
-import matt.collect.mapToSet
 import matt.lang.function.Op
 import matt.lang.require.requireNot
 import matt.model.flowlogic.loader.ObjectLoader
@@ -15,13 +13,33 @@ import matt.progress.SimpleMutableProgress
 import kotlin.time.Duration.Companion.milliseconds
 
 
+class RequestResolver<T, S>(
+    val loader: Loader<S>,
+) {
+    private val requested = mutableMapOf<S, ObjectRequest<T, S>>()
+    fun requestOrLink(
+        source: S,
+        generator: ObjectLoader<T, S>
+    ) = ObjectRequest(source, generator).also { requestOrLink(it) }
+
+    fun requestOrLink(req: ObjectRequest<T, S>) {
+        val existingRequest = requested[req.source]
+        if (existingRequest == null) {
+            loader.request(req)
+            requested[req.source] = req
+        } else {
+            req.link(existingRequest)
+        }
+
+    }
+}
+
+
 const val MAX_RETRY_PER_IM = 10
 val RETRY_INTERVAL = 100.milliseconds
 
-class Loader<T, S>(
+class Loader<S>(
     private val coScope: CoroutineScope,
-    private val generator: ObjectLoader<T, S>,
-    private val oneElementPerSource: Boolean,
     private val maxConcurrentRequests: Int? = null
 ) {
 
@@ -29,16 +47,19 @@ class Loader<T, S>(
 
     private var started = false
 
-    private val inputRequests = mutableListOf<ObjectRequestBase2<T, S>>()
+    private val inputRequests = mutableListOf<ObjectRequestBase2<*, S>>()
 
-    fun request(source: S): ObjectRequestBase<T, S> {
+    fun <T> request(
+        source: S,
+        generator: ObjectLoader<T, S>
+    ): ObjectRequestBase<T, S> {
         requireNot(started)
-        val req = ObjectRequest<T, S>(source)
+        val req = ObjectRequest(source, generator)
         inputRequests += req
         return req
     }
 
-    fun request(request: ObjectRequestBase2<T, S>) {
+    fun <T> request(request: ObjectRequestBase2<T, S>) {
         requireNot(started)
         inputRequests += request
     }
@@ -47,31 +68,19 @@ class Loader<T, S>(
         requireNot(started)
         started = true
         println("starting to load ${inputRequests.size} requests")
-        val requestBatches = if (!oneElementPerSource) {
-            inputRequests.map { setOf(it) }
-        } else {
-            val map = mutableMapOf<S, MutableSet<ObjectRequestBase2<T, S>>>()
-            inputRequests.forEach {
-                map.getOrPut(it.source) {
-                    mutableSetOf()
-                }.add(it)
-            }
-            map.values.toList()
-        }
 
 
-        println("num batches = ${requestBatches.size}")
+        println("num root requests = ${inputRequests.size}")
 
 
-        progress.initDivider(totalParts = requestBatches.size.toUInt())
+        progress.initDivider(totalParts = inputRequests.size.toUInt())
         progress.status("Loading Resources")
 
-        val batches = requestBatches.map {
+        val batches = inputRequests.map {
             SingleElementLoader(
                 it,
                 coScope = coScope,
                 progress = progress,
-                generator = generator
             )
         }
         if (maxConcurrentRequests == null) {
@@ -104,24 +113,19 @@ class Loader<T, S>(
     }
 }
 
+
 private class SingleElementLoader<T, S>(
-    private val requests: Set<ObjectRequestBase2<T, S>>,
+    private val request: ObjectRequestBase2<T, S>,
     private val coScope: CoroutineScope,
     private val progress: SimpleMutableProgress,
-    private val generator: ObjectLoader<T, S>
 ) {
-    init {
-        require(requests.mapToSet { it.source }.areAllTheSame())
-    }
-
-
     private var retriedCount: Int = 0
-    val source = requests.first().source
+    val source = request.source
 
     private val subProgress = progress.subProgress()
 
     fun start() = coScope.launch {
-        generator.generateFrom(
+        request.generator.generateFrom(
             source,
             onLoad = ::onLoad,
             onErr = ::onErr,
@@ -139,9 +143,7 @@ private class SingleElementLoader<T, S>(
 
     fun onLoad(e: T) {
         coScope.launch {
-            requests.forEach {
-                it.fulfill(e)
-            }
+            request.fulfill(e)
             subProgress.complete()
             loadListeners.iterateM {
                 it()
@@ -177,10 +179,15 @@ interface ObjectRequestBase<T, S> {
 
 interface ObjectRequestBase2<T, S> : ObjectRequestBase<T, S> {
     suspend fun fulfill(e: T)
+    val generator: ObjectLoader<T, S>
+
 }
 
-class ObjectRequest<T, S>(override val source: S) : ObjectRequestBase2<T, S> {
-    private val slot = SuspendLoadedValueSlot<T>()
+class ObjectRequest<T, S>(
+    override val source: S,
+    override val generator: ObjectLoader<T, S>
+) : ObjectRequestBase2<T, S> {
+    private var slot = SuspendLoadedValueSlot<T>()
     override suspend fun fulfill(e: T) {
         slot.putLoadedValue(e)
     }
@@ -194,5 +201,11 @@ class ObjectRequest<T, S>(override val source: S) : ObjectRequestBase2<T, S> {
     }
 
     override fun getNowUnsafe() = slot.getNowUnsafe()
+
+    fun link(source: ObjectRequest<T, S>) {
+        slot = source.slot
+    }
+
+
 }
 
