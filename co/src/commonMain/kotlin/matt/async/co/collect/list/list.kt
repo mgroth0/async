@@ -17,13 +17,13 @@ suspend fun <E> SuspendCollection<E>.toNonSuspendList(): List<E> {
 }
 
 
-interface SuspendList<E>: SuspendCollection<E> {
+interface SuspendList<out E>: SuspendCollection<E> {
 
   suspend fun get(index: Int): E
 
-  suspend fun indexOf(element: E): Int
+  suspend fun indexOf(element: @UnsafeVariance E): Int
 
-  suspend fun lastIndexOf(element: E): Int
+  suspend fun lastIndexOf(element: @UnsafeVariance E): Int
 
 
   suspend fun listIterator(): SuspendListIterator<E>
@@ -36,13 +36,15 @@ interface SuspendList<E>: SuspendCollection<E> {
 
 }
 
+
+
 fun <E> List<E>.suspending() = SuspendWrapList(this)
 
 open class SuspendWrapList<E>(private val list: List<E>): SuspendWrapCollection<E>(list), SuspendList<E> {
 
 
   override suspend fun get(index: Int): E {
-	return list.get(index)
+	return list[index]
   }
 
   override suspend fun indexOf(element: E): Int {
@@ -71,7 +73,7 @@ open class SuspendWrapList<E>(private val list: List<E>): SuspendWrapCollection<
 }
 
 
-interface SuspendListIterator<E>: SuspendIterator<E> {
+interface SuspendListIterator<out E>: SuspendIterator<E> {
   suspend fun hasPrevious(): Boolean
   suspend fun nextIndex(): Int
   suspend fun previous(): E
@@ -133,7 +135,7 @@ class SuspendWrapMutableList<E>(private val list: MutableList<E>): SuspendWrapLi
 	return mutColSuper.add(element)
   }
 
-  override suspend fun addAll(elements: SuspendCollection<out E>): Boolean {
+  override suspend fun addAll(elements: SuspendCollection<E>): Boolean {
 	return mutColSuper.addAll(elements)
   }
 

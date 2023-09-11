@@ -1,5 +1,4 @@
-@file:Suppress("ktlint:matt:no-disallowed-imports-thread")
-
+@file:JvmName("ThreadJvmAndroidKt")
 package matt.async.thread
 
 
@@ -11,6 +10,8 @@ import matt.lang.shutdown.preaper.ProcessReaper
 import matt.log.textart.TEXT_BAR
 import matt.model.code.errreport.Report
 import kotlin.concurrent.thread
+
+object TestCommonJvmAndroidThreadObject
 
 class ThreadReport : Report() {
 

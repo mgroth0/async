@@ -7,7 +7,7 @@ import matt.async.co.collect.SuspendWrapCollection
 import matt.async.co.collect.SuspendWrapMutableCollection
 import matt.async.co.collect.SuspendWrapMutableIterator
 
-interface SuspendSet<E>: SuspendCollection<E> {}
+interface SuspendSet<out E>: SuspendCollection<E>
 
 fun <E> Set<E>.suspending() = SuspendWrapSet(this)
 

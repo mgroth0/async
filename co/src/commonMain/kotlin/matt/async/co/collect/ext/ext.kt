@@ -29,7 +29,7 @@ suspend public fun <T> SuspendIterator<T>.asFlow(): Flow<T> = flow {
 }
 
 @Suppress("UNCHECKED_CAST")
-suspend public inline fun <reified T> SuspendCollection<out T>.toTypedArray(): Array<T> {
+suspend public inline fun <reified T> SuspendCollection<T>.toTypedArray(): Array<T> {
     return toNonSuspendCollection().toTypedArray()
 }
 
@@ -37,7 +37,7 @@ suspend public inline fun <reified T> SuspendCollection<out T>.toTypedArray(): A
  * Applies the given [transform] function to each element of the original collection
  * and appends the results to the given [destination].
  */
-public suspend inline fun <T, R, C : SuspendMutableCollection<in R>> SuspendIterable<T>.mapTo(
+suspend inline fun <T, R, C : SuspendMutableCollection<in R>> SuspendIterable<T>.mapTo(
     destination: C,
     transform: (T) -> R
 ): C {
@@ -56,7 +56,7 @@ public suspend inline fun <T, R, C : SuspendMutableCollection<in R>> SuspendIter
  *
  * @sample samples.collections.Collections.Transformations.map
  */
-public suspend inline fun <T, R> SuspendIterable<T>.map(transform: (T) -> R): SuspendList<R> {
+suspend inline fun <T, R> SuspendIterable<T>.map(transform: (T) -> R): SuspendList<R> {
     contract {
         callsInPlace(transform, UNKNOWN)
     }
@@ -137,8 +137,7 @@ suspend internal fun <T> SuspendList<T>.optimizeReadOnlyList() = when (size()) {
     else -> this
 }
 
-@Suppress("UNCHECKED_CAST")
-public fun <T> emptySet(): SuspendSet<T> = EmptySuspendSet as SuspendSet<T>
+fun <T> emptySet(): SuspendSet<T> = EmptySuspendSet
 
 internal object EmptySuspendSet : SuspendSet<Nothing> {
 
@@ -198,8 +197,7 @@ suspend fun <T> SuspendCollection<T>.toMutableList(): SuspendMutableList<T> {
 }
 
 
-@Suppress("UNCHECKED_CAST")
-public fun <T> emptyList(): SuspendList<T> = EmptySuspendList as SuspendList<T>
+fun <T> emptyList(): SuspendList<T> = EmptySuspendList
 
 internal object EmptySuspendList : SuspendList<Nothing>, RandomAccess {
     private const val serialVersionUID: Long = -7390468764508069838L

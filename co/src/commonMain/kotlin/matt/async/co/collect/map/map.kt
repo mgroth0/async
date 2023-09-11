@@ -43,7 +43,7 @@ class SuspendMapSerializer<K : Any, V : Any>(
 
 interface SuspendMap<K, V> {
     suspend fun snapshot(): Set<Map.Entry<K, V>>
-    suspend fun currentEntries(): SuspendSet<out SuspendEntry<K, V?>>
+    suspend fun currentEntries(): SuspendSet<SuspendEntry<K, V?>>
     suspend fun keys(): SuspendSet<K>
     suspend fun size(): Int
     suspend fun values(): SuspendCollection<V>
@@ -65,7 +65,7 @@ open class SuspendMapWrap<K, V>(protected open val map: Map<K, V>) : SuspendMap<
 //        TODO("Not yet implemented")
 //    }
 
-    override suspend fun currentEntries(): SuspendSet<out SuspendEntry<K, V?>> {
+    override suspend fun currentEntries(): SuspendSet<SuspendEntry<K, V?>> {
         TODO("Not yet implemented")
     }
 

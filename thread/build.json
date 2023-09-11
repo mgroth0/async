@@ -1,20 +1,30 @@
 {
-  "type": "BasicJvmOnlyMod",
+  "type": "MultiPlatformModule",
   "dependencies": [
     {
       "type": "Project",
-      "cfg": "api",
+      "cfg": "commonJvmAndroidMainApi",
       "path": ":k:async"
     },
     {
       "type": "Project",
-      "cfg": "api",
+      "cfg": "commonJvmAndroidMainApi",
       "path": ":k:log"
     },
     {
       "type": "Project",
-      "cfg": "testImplementation",
+      "cfg": "jvmTestImplementation",
       "path": ":k:test"
+    },
+    {
+      "type": "Project",
+      "cfg": "commonMainImplementation",
+      "path": ":k:lang"
     }
-  ]
+  ],
+  "jvm": {},
+  "android": {
+    "type": "Lib"
+  },
+  "note": "adding js does not change a thing"
 }

@@ -11,12 +11,12 @@ interface SuspendIterable<out E> {
     suspend operator fun iterator(): SuspendIterator<E>
 }
 
-interface SuspendCollection<E> : SuspendIterable<E> {
+interface SuspendCollection<out E> : SuspendIterable<E> {
     suspend fun size(): Int
 
-    suspend fun contains(element: E): Boolean
+    suspend fun contains(element: @UnsafeVariance E): Boolean
 
-    suspend fun containsAll(elements: SuspendCollection<E>): Boolean
+    suspend fun containsAll(elements: SuspendCollection<@UnsafeVariance E>): Boolean
     suspend fun isEmpty(): Boolean
 
     suspend fun toNonSuspendCollection(): Collection<E>
@@ -57,7 +57,7 @@ open class SuspendWrapCollection<E>(private val collection: Collection<E>) : Sus
 interface SuspendMutableCollection<E> : SuspendCollection<E> {
     suspend fun add(element: E): Boolean
 
-    suspend fun addAll(elements: SuspendCollection<out E>): Boolean
+    suspend fun addAll(elements: SuspendCollection<E>): Boolean
 
     suspend fun clear()
 
@@ -103,7 +103,7 @@ open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>
      *
      * @return `true` if any of the specified elements was added to the collection, `false` if the collection was not modified.
      */
-    override suspend fun addAll(elements: SuspendCollection<out E>): Boolean {
+    override suspend fun addAll(elements: SuspendCollection<E>): Boolean {
         var r = false
         for (e in elements) {
             if (col.add(e)) {
@@ -235,7 +235,7 @@ suspend inline fun <T, K, M : SuspendMutableMap<in K, SuspendMutableList<T>>> Su
 }
 
 
-suspend inline fun <T, K> SuspendIterable<T>.groupBy(keySelector: (T) -> K): SuspendMap<K, out SuspendList<out T>> {
+suspend inline fun <T, K> SuspendIterable<T>.groupBy(keySelector: (T) -> K): SuspendMap<K, out SuspendList<T>> {
     return groupByTo(LinkedHashMap<K, SuspendMutableList<T>>().suspending(), keySelector)
 }
 
