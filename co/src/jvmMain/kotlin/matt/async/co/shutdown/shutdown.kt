@@ -4,7 +4,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import matt.lang.anno.optin.IncubatingMattCode
 import matt.lang.function.SuspendOp
-import matt.lang.shutdown.duringShutdown
+import matt.lang.shutdown.ShutdownExecutorImpl
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 
+context(ShutdownExecutorImpl)
 @IncubatingMattCode("still have to implement this")
 fun duringShutdownSuspending(task: SuspendOp) {
     duringShutdown {

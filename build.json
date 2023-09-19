@@ -4,17 +4,12 @@
     {
       "type": "Project",
       "cfg": "commonMainApi",
-      "path": ":k:time"
+      "path": ":k:model"
     },
     {
       "type": "Project",
       "cfg": "commonMainApi",
       "path": ":k:collect"
-    },
-    {
-      "type": "Project",
-      "cfg": "jvmMainApi",
-      "path": ":k:reflect"
     },
     {
       "type": "Project",

@@ -8,6 +8,11 @@
     },
     {
       "type": "Project",
+      "cfg": "commonMainApi",
+      "path": ":k:time"
+    },
+    {
+      "type": "Project",
       "cfg": "commonJvmAndroidMainApi",
       "path": ":k:log"
     },

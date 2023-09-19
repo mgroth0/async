@@ -1,73 +1,79 @@
 package matt.async.safe
 
+import kotlinx.serialization.Serializable
 import java.util.concurrent.Semaphore
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 
 
-@kotlinx.serialization.Serializable
+@Serializable
 class MutSemMap<K, V>(
     private val map: MutableMap<K, V> = HashMap(),
     private val maxsize: Int = Int.MAX_VALUE
 ) : MutableMap<K, V> {
 
-    private val sem by lazy { Semaphore(1) }
+    override val size: Int get() = map.size
 
-    override val size: Int
-        get() = sem.with { map.size }
-
+    @Synchronized
     override fun containsKey(key: K): Boolean {
-        return sem.with { map.containsKey(key) }
+        return map.containsKey(key)
     }
 
+    @Synchronized
     override fun containsValue(value: V): Boolean {
-        return sem.with { map.containsValue(value) }
+        return map.containsValue(value)
     }
 
+    @Synchronized
     override fun get(key: K): V? {
-        return sem.with { map[key] }
+        return map [ key]
     }
 
+    @Synchronized
     override fun isEmpty(): Boolean {
-        return sem.with { map.isEmpty() }
+        return map.isEmpty()
     }
+
 
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
-        get() = sem.with { map.entries }
+        @Synchronized get() = map.entries
     override val keys: MutableSet<K>
-        get() = sem.with { map.keys }
+        @Synchronized get() = map.keys
     override val values: MutableCollection<V>
-        get() = sem.with { map.values }
+        @Synchronized get() = map.values
 
+    @Synchronized
     override fun clear() {
-        sem.with { map.clear() }
+        map.clear()
     }
 
+    @Synchronized
     override fun put(
         key: K,
         value: V
     ): V? {
-        return sem.with { map.put(key, value) }
+        return map.put(key, value)
     }
 
+    @Synchronized
     override fun putAll(from: Map<out K, V>) {
-        return sem.with { map.putAll(from) }
+        return map.putAll(from)
     }
 
+    @Synchronized
     override fun remove(key: K): V? {
-        return sem.with { map.remove(key) }
+        return map.remove(key)
     }
 
+    @Synchronized
     fun setIfNotFull(
         k: K,
         v: V
     ): Boolean {
-        return sem.with {
-            if (map.size < maxsize) {
-                map[k] = v
-                true
-            } else false
-        }
+        return if (map.size < maxsize) {
+            map[k] = v
+            true
+        } else false
     }
 
 }
@@ -76,8 +82,7 @@ class MutSemMap<K, V>(
 fun <K, V> mutSemMapOf(
     vararg pairs: Pair<K, V>,
     maxsize: Int = Int.MAX_VALUE
-) =
-    MutSemMap(mutableMapOf(*pairs), maxsize = maxsize)
+) = MutSemMap(mutableMapOf(*pairs), maxsize = maxsize)
 
 
 class SemaphoreString(private var string: String) {
@@ -112,7 +117,7 @@ fun <T> Semaphore.with(op: () -> T): T {
 // literally a combination of sem and thread
 fun Semaphore.thread(op: () -> Unit) {
     acquire()
-    kotlin.concurrent.thread {
+    kotlin.concurrent.thread(name = "semaphore thread") {
         op()
         release()
     }

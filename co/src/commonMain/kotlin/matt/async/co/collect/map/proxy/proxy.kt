@@ -12,14 +12,14 @@ import matt.async.co.collect.map.toFakeSuspendMutableEntry
 import matt.async.co.collect.set.SuspendMutableSet
 import matt.async.co.collect.set.fake.toSuspendingFakeMutableSet
 import matt.collect.mapToSet
+import matt.lang.convert.BiConverter
 import matt.model.data.proxy.map.ImmutableProxyMap
-import matt.model.op.convert.Converter
 import kotlin.collections.Map.Entry
 
 
 fun <SK : Any, SV : Any, TK : Any, TV : Any> SuspendMutableMap<SK, SV>.proxy(
-    keyConverter: Converter<SK, TK>,
-    valueConverter: Converter<SV, TV>
+    keyConverter: BiConverter<SK, TK>,
+    valueConverter: BiConverter<SV, TV>
 ) = SuspendProxyMap(
     this,
     keyConverter,
@@ -28,8 +28,8 @@ fun <SK : Any, SV : Any, TK : Any, TV : Any> SuspendMutableMap<SK, SV>.proxy(
 
 class SuspendProxyMap<SK : Any, SV : Any, TK : Any, TV : Any>(
     private val innerMap: SuspendMutableMap<SK, SV>,
-    private val keyConverter: Converter<SK, TK>,
-    private val valueConverter: Converter<SV, TV>
+    private val keyConverter: BiConverter<SK, TK>,
+    private val valueConverter: BiConverter<SV, TV>
 ) : SuspendMutableMap<TK, TV> {
 
     private fun SK.toTK() = keyConverter.convertToB(this)

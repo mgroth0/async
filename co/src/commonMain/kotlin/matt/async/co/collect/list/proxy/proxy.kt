@@ -4,12 +4,12 @@ import matt.async.co.collect.SuspendCollection
 import matt.async.co.collect.ext.map
 import matt.async.co.collect.list.SuspendMutableList
 import matt.async.co.collect.list.SuspendMutableListIterator
+import matt.lang.convert.BiConverter
 import matt.model.data.proxy.list.ProxyList
-import matt.model.op.convert.Converter
 
 class SuspendProxyList<S, T>(
     private val innerList: SuspendMutableList<S>,
-    private val converter: Converter<S, T>
+    private val converter: BiConverter<S, T>
 ): SuspendMutableList<T> {
 
   private fun S.toT() = converter.convertToB(this)

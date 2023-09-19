@@ -4,7 +4,6 @@ import matt.async.thread.namedThread
 import matt.lang.NUM_LOGICAL_CORES
 import java.util.concurrent.ConcurrentHashMap
 
-
 fun <K, V> Sequence<K>.parChunkAssociateWith(
     numThreads: Int? = null,
     op: (K) -> V

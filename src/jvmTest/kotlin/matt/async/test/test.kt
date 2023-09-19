@@ -12,6 +12,8 @@ import kotlin.test.assertEquals
 class AsyncTests {
     @Test
     fun defaultThreadPriorityIsDefault() = assertRunsInOneMinute {
+
+
         val t = namedThread("AsyncTests defaultThreadPriorityIsDefault Thread", start = false) {}
 
         assertEquals(NOT_IN_USE1.ordinal, Thread.MIN_PRIORITY)
