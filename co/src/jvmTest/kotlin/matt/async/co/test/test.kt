@@ -7,7 +7,7 @@ import matt.async.co.collect.set.fake.FakeMutableSuspendSet
 import matt.async.co.lock.reentry.ReentrantMutex
 import matt.async.co.scope.MJob
 import matt.async.co.suspend.realSuspendLazy
-import matt.test.JupiterTestAssertions.assertRunsInOneMinute
+import matt.test.assertions.JupiterTestAssertions.assertRunsInOneMinute
 import matt.test.co.runTestWithTimeoutOnlyIfTestingPerformance
 import kotlin.test.Test
 

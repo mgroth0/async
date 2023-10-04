@@ -67,6 +67,7 @@ fun CoroutineScope.launchWithInitialDelay(
             val unRushedDelay = produce<Unit>(capacity = Factory.UNLIMITED) {
                 delay(initialDelay)
             }
+
             val rusher = produce<Unit>(capacity = Channel.UNLIMITED) {
                 rusherMutex.lock()
             }
@@ -74,6 +75,9 @@ fun CoroutineScope.launchWithInitialDelay(
                 unRushedDelay.onReceiveCatching {}
                 rusher.onReceiveCatching {}
             }
+            /*DONT FORGET THIS PART. NOT CANCELLING THE TWO THINGS BELOW CAUSED ME MAJOR DEADLOCKS FOR A WHILE.*/
+            unRushedDelay.cancel()
+            rusher.cancel()
         } finally {
             safelyUnlock()
         }

@@ -70,10 +70,12 @@ class MutSemMap<K, V>(
         k: K,
         v: V
     ): Boolean {
+
         return if (map.size < maxsize) {
             map[k] = v
             true
         } else false
+
     }
 
 }

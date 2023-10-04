@@ -5,7 +5,8 @@ import matt.async.pri.MyThreadPriorities.DEFAULT
 import matt.async.pri.MyThreadPriorities.NOT_IN_USE1
 import matt.async.pri.MyThreadPriorities.NOT_IN_USE10
 import matt.async.thread.namedThread
-import matt.test.JupiterTestAssertions.assertRunsInOneMinute
+import matt.json.toJsonString
+import matt.test.assertions.JupiterTestAssertions.assertRunsInOneMinute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,6 +14,8 @@ class AsyncTests {
     @Test
     fun defaultThreadPriorityIsDefault() = assertRunsInOneMinute {
 
+
+        1.toJsonString()
 
         val t = namedThread("AsyncTests defaultThreadPriorityIsDefault Thread", start = false) {}
 
