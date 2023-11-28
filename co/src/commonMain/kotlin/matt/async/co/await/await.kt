@@ -9,7 +9,7 @@ import matt.lang.function.Op
 import matt.lang.go
 import matt.lang.model.value.Value
 import matt.lang.model.value.ValueWrapper
-import matt.lang.require.requireNull
+import matt.lang.assertions.require.requireNull
 import matt.model.flowlogic.await.SuspendAwaitable
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume

@@ -3,63 +3,43 @@ package matt.async.co.shutdown
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
+import matt.lang.shutdown.AlreadyRanWithinShutdownShutdownTask
+import matt.lang.shutdown.CancellableShutdownTask
 import matt.lang.shutdown.CoShutdownTask
-import matt.lang.shutdown.ShutdownContext
-import matt.lang.shutdown.ShutdownTask
-import matt.lang.shutdown.WithinShutdownShutdownTask
+import matt.lang.shutdown.MyShutdownContext
+import matt.lang.sync.SimpleReferenceMonitor
 import matt.lang.sync.inSync
 
 fun CoroutineScope.shutdownContext() = CoroutineScopeShutdownExecutor(this)
 
 class CoroutineScopeShutdownExecutor(
     private val scope: CoroutineScope
-) : CoroutineScope by scope, ShutdownContext {
+) : CoroutineScope by scope, MyShutdownContext<CancellableShutdownTask> {
 
 
-    override fun duringShutdown(task: () -> Unit): ShutdownTask {
+    override fun duringShutdown(task: () -> Unit) = duringShutdownDebuggable { _ -> task() }
+
+    private fun duringShutdownDebuggable(task: (Throwable?) -> Unit): CancellableShutdownTask {
         if (!scope.isActive) {
-            task()
-            return WithinShutdownShutdownTask
+            task(null)
+            return AlreadyRanWithinShutdownShutdownTask
         }
         var cancelledShutdownTask = false
         var didRunTask = false
-        val monitor = {}
+        val monitor = SimpleReferenceMonitor()
 
 
-//        suspendCancellableCoroutine<String> {
-//
-//        }
-//        suspendCoroutine<String> {
-//
-//        }
-//
         val scopeJob = scope.coroutineContext.job
-//        scopeJob.join()
-//        scopeJob.invokeOnCompletion {  }
+
         val handle = scopeJob.invokeOnCompletion {
+
             val didCancel = inSync(monitor) {
                 didRunTask = true
                 cancelledShutdownTask
             }
-            if (!didCancel) task()
+            if (!didCancel) task(it)
         }
 
-//
-//        val job = launch {
-//            supervisorScope {
-//                launch {
-//                    try {
-//                        awaitCancellation()
-//                    } finally {
-//                        val didCancel = inSync(monitor) {
-//                            didRunTask = true
-//                            cancelledShutdownTask
-//                        }
-//                        if (!didCancel) task()
-//                    }
-//                }
-//            }
-//        }
         return CoShutdownTask(
             onCancel = {
 

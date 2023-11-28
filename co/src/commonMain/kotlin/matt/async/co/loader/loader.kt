@@ -5,8 +5,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import matt.async.co.await.SuspendLoadedValueSlot
 import matt.collect.itr.iterateM
+import matt.lang.assertions.require.requireNot
 import matt.lang.function.Op
-import matt.lang.require.requireNot
 import matt.model.flowlogic.loader.ObjectLoader
 import matt.obs.listen.bool.whenTrueOnce
 import matt.progress.SimpleMutableProgress
@@ -85,6 +85,7 @@ class Loader<S>(
         }
         if (maxConcurrentRequests == null) {
             batches.forEach {
+
                 it.start()
             }
         } else {
@@ -152,9 +153,9 @@ private class SingleElementLoader<T, S>(
         }
     }
 
-    fun onErr() {
-        val message = "element load error for $source"
-        println(message)
+    fun onErr(message: String) {
+        val fullMessage = "element load error for $source: $message"
+        println(fullMessage)
         if (retriedCount < MAX_RETRY_PER_IM) {
             println("retrying $source")
             retriedCount++
@@ -164,7 +165,7 @@ private class SingleElementLoader<T, S>(
             }
         } else {
             println("too many retries for $source")
-            progress.failure(message)
+            progress.failure(fullMessage)
         }
     }
 

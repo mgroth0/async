@@ -7,9 +7,9 @@ import matt.async.co.latch.SimpleCoLatch
 import matt.async.every.job.RepeatableDelayableJob
 import matt.collect.queue.MyMutableQueueImpl
 import matt.collect.queue.pollUntilEnd
-import matt.lang.anno.OnlySynchronizedOnJvm
+import matt.lang.assertions.require.requireNot
 import matt.lang.function.Op
-import matt.lang.require.requireNot
+import matt.lang.sync.ReferenceMonitor
 import matt.lang.sync.inSync
 import matt.model.flowlogic.keypass.KeyPass
 import matt.time.UnixTime
@@ -25,7 +25,7 @@ class RepeatableDelayableJobCoImpl(
     op: Op
 ) : RepeatableDelayableJob<SimpleCoLatch>(
     name = name, interJobInterval = refreshRate, executor = coExecutor, op = op
-) {
+), ReferenceMonitor {
 
 
     override fun newLatch() = SimpleCoLatch()
@@ -47,11 +47,10 @@ class RepeatableDelayableJobCoImpl(
     }
 
 
-    @OnlySynchronizedOnJvm
     override fun rescheduleForNowPlus(
         d: Duration,
         orRunImmediatelyIfItsBeen: Duration?
-    ) {
+    ) = inSync {
         requireNot(cancelled)
         if (orRunImmediatelyIfItsBeen != null) {
             if (timeSinceLastRunFinished?.let { it > orRunImmediatelyIfItsBeen } != false) {
@@ -79,8 +78,7 @@ class RepeatableDelayableJobCoImpl(
         return ticket
     }
 
-    @OnlySynchronizedOnJvm
-    override fun hurry() {
+    override fun hurry()  = inSync{
         requireNot(cancelled)
         if (runningOpFlag.isNotHeld) {
             nextRunTime = UnixTime()

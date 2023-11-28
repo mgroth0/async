@@ -3,8 +3,9 @@ package matt.async.co.latch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
-import matt.lang.anno.OnlySynchronizedOnJvm
 import matt.lang.go
+import matt.lang.sync.ReferenceMonitor
+import matt.lang.sync.inSync
 import matt.model.flowlogic.await.SuspendAwaitable
 import matt.model.flowlogic.latch.LatchAwaitResult
 import matt.model.flowlogic.latch.LatchAwaitResult.LATCH_OPENED
@@ -14,7 +15,7 @@ import matt.model.flowlogic.latch.SimpleLatch
 import kotlin.time.Duration
 
 
-class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch {
+class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch, ReferenceMonitor {
     private var failure: LatchCancelled? = null
 
 
@@ -68,8 +69,7 @@ class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch {
         }
     }
 
-    @OnlySynchronizedOnJvm
-    override fun open() {
+    override fun open() = inSync {
         if (mutex.isLocked) {
             mutex.unlock()
         }

@@ -5,7 +5,6 @@ import matt.lang.exec.InPlaceExecutor
 import matt.lang.function.Produce
 import matt.lang.go
 import matt.lang.idea.ProceedingIdea
-import matt.lang.preciseTime
 import matt.model.flowlogic.await.Donable
 import matt.model.flowlogic.await.ThreadAwaitable
 import matt.model.flowlogic.latch.SimpleThreadLatch
@@ -13,6 +12,7 @@ import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.time.TimeSource.Monotonic
 
 interface QueueWorkerInter : ProceedingIdea {
     fun <T> schedule(
@@ -91,10 +91,10 @@ class QueueWorker(name: String? = null) : QueueWorkerInter, InPlaceExecutor() {
         JobLike<T> {
         internal val result = LoadedValueSlot<T>()
         override fun run() {
-            val start = timer?.let { preciseTime() }
+            val start = timer?.let { Monotonic.markNow() }
             start?.go { println("starting $timer") }
             result.putLoadedValue(op())
-            start?.go { println("$timer took ${preciseTime() - it}") }
+            start?.go { println("$timer took ${Monotonic.markNow() - it}") }
         }
 
         override fun await() = result.await()
@@ -129,7 +129,7 @@ class QueueWorker(name: String? = null) : QueueWorkerInter, InPlaceExecutor() {
         }
 
         override fun run() {
-            val start = timer?.let { preciseTime() }
+            val start = timer?.let { Monotonic.markNow() }
             start?.go { println("starting $timer") }
 
 
@@ -138,7 +138,7 @@ class QueueWorker(name: String? = null) : QueueWorkerInter, InPlaceExecutor() {
 
 
             finalCount = dsl.count
-            start?.go { println("$timer took ${preciseTime() - it}") }
+            start?.go { println("$timer took ${Monotonic.markNow() - it}") }
         }
     }
 

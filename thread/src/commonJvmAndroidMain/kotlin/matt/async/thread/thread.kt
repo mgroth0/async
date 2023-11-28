@@ -9,6 +9,7 @@ import matt.lang.function.Op
 import matt.lang.service.ThreadProvider
 import matt.log.textart.TEXT_BAR
 import matt.model.code.errreport.Report
+import matt.model.flowlogic.await.ThreadAwaitable
 import kotlin.concurrent.thread
 
 
@@ -81,4 +82,33 @@ object TheThreadProvider : ThreadProvider {
         block: Op
     ) = matt.async.thread.namedThread(name = name, isDaemon = isDaemon, start = start, block = block)
 
+}
+
+private class CatchingThreadJoiner() : ThreadAwaitable<Throwable?> {
+    lateinit var thread: Thread
+    var throwable: Throwable? = null
+    override fun await(): Throwable? {
+        thread.join()
+        return throwable
+    }
+}
+
+/*enforcing thread naming*/
+fun catchingThread(
+    name: String,
+    start: Boolean = true,
+    isDaemon: Boolean = false,
+    priority: Int = -1,
+    block: () -> Unit
+): ThreadAwaitable<Throwable?> {
+    val catchingThreadJoiner = CatchingThreadJoiner()
+    val t = thread(name = name, block = {
+        try {
+            block()
+        } catch (t: Throwable) {
+            catchingThreadJoiner.throwable = t
+        }
+    }, start = start, isDaemon = isDaemon, priority = priority)
+    catchingThreadJoiner.thread = t
+    return catchingThreadJoiner
 }

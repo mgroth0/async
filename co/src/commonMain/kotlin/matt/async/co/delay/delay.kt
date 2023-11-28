@@ -2,7 +2,6 @@ package matt.async.co.delay
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -16,6 +15,7 @@ import kotlinx.coroutines.withContext
 import matt.async.bed.RepeatingJobBase
 import matt.lang.function.Op
 import matt.lang.function.SuspendOp
+import matt.lang.sync.SimpleReferenceMonitor
 import matt.lang.sync.inSync
 import matt.time.UnixTime
 import kotlin.time.Duration
@@ -48,13 +48,13 @@ class RepeatingCoroutineJob(
 
 }
 
-@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun CoroutineScope.launchWithInitialDelay(
     initialDelay: Duration,
     op: SuspendOp
 ): DelayedJob {
     val rusherMutex = Mutex(locked = true)
-    val lockLock = object {}
+    val lockLock = SimpleReferenceMonitor()
     fun safelyUnlock() {
         inSync(lockLock) {
             if (rusherMutex.isLocked) rusherMutex.unlock()

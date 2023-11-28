@@ -2,8 +2,8 @@ package matt.async.test
 
 
 import matt.async.pri.MyThreadPriorities.DEFAULT
-import matt.async.pri.MyThreadPriorities.NOT_IN_USE1
 import matt.async.pri.MyThreadPriorities.NOT_IN_USE10
+import matt.async.pri.MyThreadPriorities.THE_DAEMON
 import matt.async.thread.namedThread
 import matt.json.toJsonString
 import matt.test.assertions.JupiterTestAssertions.assertRunsInOneMinute
@@ -19,7 +19,7 @@ class AsyncTests {
 
         val t = namedThread("AsyncTests defaultThreadPriorityIsDefault Thread", start = false) {}
 
-        assertEquals(NOT_IN_USE1.ordinal, Thread.MIN_PRIORITY)
+        assertEquals(THE_DAEMON.ordinal, Thread.MIN_PRIORITY)
         assertEquals(Thread.NORM_PRIORITY, DEFAULT.ordinal)
         assertEquals(NOT_IN_USE10.ordinal, Thread.MAX_PRIORITY)
 

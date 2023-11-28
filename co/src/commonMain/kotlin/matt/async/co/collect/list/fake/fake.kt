@@ -50,8 +50,8 @@ class FakeMutableSuspendList<E>(val list: SuspendList<E>): SuspendMutableList<E>
 	err("tried to modify ${FakeMutableSuspendList::class.simpleName}")
   }
 
-  override suspend fun subList(fromIndex: Int, toIndex: Int): SuspendMutableList<E> {
-	return list.subList(fromIndex, toIndex).toSuspendingFakeMutableList()
+  override suspend fun subList(fromIndexInclusive: Int, toIndexExclusive: Int): SuspendMutableList<E> {
+	return list.subList(fromIndexInclusive, toIndexExclusive).toSuspendingFakeMutableList()
   }
 
   override suspend fun get(index: Int): E {

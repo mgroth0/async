@@ -39,6 +39,9 @@ In the library, this is an `actual` fun. The `expect` fun is in the `concurrent`
 * */
 
 
+@SeeURL("https://youtrack.jetbrains.com/issue/KT-63416/K2-Contracts-False-positive-Leaked-in-place-lambda-warning-caused-by-suspend-lambda-with-callsInPlace-contract")
+@SeeURL("https://youtrack.jetbrains.com/issue/KT-63414/K2-Contracts-false-positive-Result-has-wrong-invocation-kind-when-invoking-a-function-returning-a-value-with-contract")
+@Suppress("WRONG_INVOCATION_KIND", "LEAKED_IN_PLACE_LAMBDA")
 @Deprecated("The MyThreadLocalEventLoop is just too unstable. Because its a static object in the coroutines library, I do not know where it is used or expected to be used.")
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 fun <T> runBlockingInShutdown(

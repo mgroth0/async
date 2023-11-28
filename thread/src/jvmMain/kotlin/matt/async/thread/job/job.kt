@@ -6,7 +6,8 @@ import matt.async.thread.schedule.RepeatingThreadJob
 import matt.collect.queue.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
 import matt.lang.anno.OnlySynchronizedOnJvm
-import matt.lang.require.requireNot
+import matt.lang.assertions.require.requireNot
+import matt.lang.sync.ReferenceMonitor
 import matt.lang.sync.inSync
 import matt.model.flowlogic.keypass.KeyPass
 import matt.model.flowlogic.latch.SimpleThreadLatch
@@ -24,7 +25,7 @@ class RepeatableDelayableJobThreadImpl(
     interJobInterval = interJobInterval,
     executor = ThreadNamingExecutor,
     op = op
-) {
+), ReferenceMonitor {
 
     override fun newQueue(): JQueueWrapper<SimpleThreadLatch> = JQueueWrapper(ConcurrentLinkedQueue())
 

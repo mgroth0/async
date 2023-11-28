@@ -2,29 +2,74 @@ package matt.async.co.lock.sem
 
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
+import matt.async.rw.RW_WRITE_PERMIT
+import matt.async.rw.ReadWriteSem
+import matt.lang.anno.SeeURL
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 
-class ReadWriteSem {
-    private val WRITE_PERMIT = 1000
-    private val sem = Semaphore(WRITE_PERMIT, 0)
-    suspend fun <R> withReadPermit(key: ReentranceKey? = null, op: suspend (ReentranceKey) -> R): R {
-        return if (key == null) sem.withPermit {
-            op(ReentranceKey())
-        } else op(ReentranceKey())
+class ReentrantCoReadWriteSem : ReadWriteSem {
+
+    private val sem = Semaphore(RW_WRITE_PERMIT, 0)
+
+
+    suspend fun <R> withReadPermit(
+        op: suspend () -> R
+    ): R {
+
+        val key = ReentrantSemaphoreKey(sem)
+        val element = coroutineContext[key]
+
+        return if (element == null) {
+            sem.withPermit {
+                withContext(ReentrantSemaphoreElement(key, 1)) {
+                    op()
+                }
+            }
+        } else {
+            op()
+        }
     }
 
-    suspend fun <R> withWritePermit(key: ReentranceKey? = null, op: suspend (ReentranceKey) -> R): R {
-        return if (key == null) sem.withPermits(WRITE_PERMIT) {
-            op(ReentranceKey())
+    suspend fun <R> withWritePermit(
+        op: suspend () -> R
+    ): R {
+
+        val key = ReentrantSemaphoreKey(sem)
+        val element = coroutineContext[key]
+
+        return if (element == null) {
+            sem.withPermits(RW_WRITE_PERMIT) {
+                withContext(ReentrantSemaphoreElement(key, RW_WRITE_PERMIT)) {
+                    op()
+                }
+            }
         } else {
-            op(ReentranceKey())
+            val elementPermits = element.permits
+            if (elementPermits != RW_WRITE_PERMIT) {
+                error("reentered for writing from a context that was for reading")
+            } else op()
         }
     }
 
     inner class ReentranceKey
+
+
+    private class ReentrantSemaphoreElement(
+        override val key: ReentrantSemaphoreKey,
+        val permits: Int,
+    ) : CoroutineContext.Element
+
+    private data class ReentrantSemaphoreKey(
+        val semaphore: Semaphore
+    ) : CoroutineContext.Key<ReentrantSemaphoreElement>
+
+
 }
 
 
@@ -41,8 +86,13 @@ fun Semaphore.releaseN(count: Int) {
 }
 
 
+@SeeURL("https://youtrack.jetbrains.com/issue/KT-63414/K2-Contracts-false-positive-Result-has-wrong-invocation-kind-when-invoking-a-function-returning-a-value-with-contract")
+@Suppress("WRONG_INVOCATION_KIND")
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <T> Semaphore.withPermits(n: Int, action: () -> T): T {
+suspend inline fun <T> Semaphore.withPermits(
+    n: Int,
+    action: () -> T
+): T {
     contract {
         callsInPlace(action, EXACTLY_ONCE)
     }

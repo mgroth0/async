@@ -1,7 +1,7 @@
 package matt.async.thread.stream
 
 import matt.async.thread.namedThread
-import matt.lang.require.requireIn
+import matt.lang.assertions.require.requireIn
 import java.io.BufferedReader
 import java.io.OutputStream
 import java.io.PipedInputStream

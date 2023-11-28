@@ -5,10 +5,12 @@ package matt.async.pri
 import kotlin.jvm.JvmName
 
 
+
+
 enum class MyThreadPriorities {
     ZERO_BAD,
-    NOT_IN_USE1,
-    NOT_IN_USE2,
+    THE_DAEMON,
+    SYSTEM_MONITORING,
     DELETING_OLD_CACHE,
     CREATING_NEW_CACHE,
     DEFAULT,

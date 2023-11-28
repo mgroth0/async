@@ -10,8 +10,8 @@ import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
 import matt.lang.function.Op
 import matt.lang.massert
-import matt.lang.require.requireEquals
-import matt.lang.require.requireIs
+import matt.lang.assertions.require.requireEquals
+import matt.lang.assertions.require.requireIs
 import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger

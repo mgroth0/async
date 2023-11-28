@@ -229,11 +229,11 @@ internal object EmptySuspendList : SuspendList<Nothing>, RandomAccess {
     }
 
     override suspend fun subList(
-        fromIndex: Int,
-        toIndex: Int
+        fromIndexInclusive: Int,
+        toIndexExclusive: Int
     ): SuspendList<Nothing> {
-        if (fromIndex == 0 && toIndex == 0) return this
-        throw IndexOutOfBoundsException("fromIndex: $fromIndex, toIndex: $toIndex")
+        if (fromIndexInclusive == 0 && toIndexExclusive == 0) return this
+        throw IndexOutOfBoundsException("fromIndex: $fromIndexInclusive, toIndex: $toIndexExclusive")
     }
 
 }

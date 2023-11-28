@@ -1,8 +1,9 @@
 package matt.async.bed
 
-import matt.lang.anno.OnlySynchronizedOnJvm
+import matt.lang.assertions.require.requireNot
 import matt.lang.idea.ProceedingIdea
-import matt.lang.require.requireNot
+import matt.lang.sync.ReferenceMonitor
+import matt.lang.sync.inSync
 
 interface RepeatingJob : ProceedingIdea {
     fun start()
@@ -10,15 +11,15 @@ interface RepeatingJob : ProceedingIdea {
 }
 
 
-abstract class RepeatingJobBase : RepeatingJob {
+abstract class RepeatingJobBase : RepeatingJob, ReferenceMonitor {
     private var started = false
 
-    @OnlySynchronizedOnJvm
-    final override fun start() {
+    final override fun start() = inSync {
         requireNot(started)
         started = true
         protectedStart()
     }
+
     protected abstract fun protectedStart()
 }
 
