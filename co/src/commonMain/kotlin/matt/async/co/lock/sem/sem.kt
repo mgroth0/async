@@ -1,16 +1,99 @@
 package matt.async.co.lock.sem
 
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import matt.async.co.latch.SimpleCoLatch
 import matt.async.rw.RW_WRITE_PERMIT
 import matt.async.rw.ReadWriteSem
 import matt.lang.anno.SeeURL
+import matt.lang.function.SuspendOp
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+
+class DomainSemaphore<T : Any> {
+
+    private val mutex = Mutex()
+    private var currentDomain: T? = null
+    private val latches = mutableSetOf<SimpleCoLatch>()
+
+
+    suspend fun withPermit(
+        domain: T,
+        op: SuspendOp
+    ) {
+        val myLatch = run {
+            mutex.lock()
+            when (currentDomain) {
+                null   -> {
+                    currentDomain = domain
+                    val myMutex = SimpleCoLatch()
+                    check(latches.isEmpty())
+                    latches.add(myMutex)
+                    mutex.unlock()
+                    myMutex
+                }
+
+                domain -> {
+                    val latch = SimpleCoLatch()
+                    latches.add(latch)
+                    mutex.unlock()
+                    latch
+                }
+
+                else   -> {
+
+                    var latchesToAwait = latches.toSet()
+
+
+                    mutex.unlock()
+                    val latch = SimpleCoLatch()
+
+                    do {
+                        check(latchesToAwait.isNotEmpty())
+                        latchesToAwait.forEach {
+                            it.await()
+                        }
+                        mutex.lock()
+                        latchesToAwait = if (currentDomain == null) {
+                            currentDomain = domain
+                            check(latches.isEmpty())
+                            latches.add(latch)
+                            mutex.unlock()
+                            break
+                        } else if (currentDomain == domain) {
+                            latches.add(latch)
+                            mutex.unlock()
+                            break
+                        } else {
+                            latches.toSet()
+                        }
+                        mutex.unlock()
+                    } while (true)
+
+
+                    latch
+                }
+            }
+        }
+        try {
+            op()
+        } finally {
+            mutex.withLock {
+                myLatch.open()
+                latches.remove(myLatch)
+                if (latches.isEmpty()) {
+                    currentDomain = null
+                }
+            }
+        }
+    }
+}
 
 
 class ReentrantCoReadWriteSem : ReadWriteSem {

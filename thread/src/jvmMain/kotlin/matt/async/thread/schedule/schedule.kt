@@ -12,6 +12,7 @@ import matt.lang.function.Op
 import matt.lang.massert
 import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireIs
+import matt.lang.atomic.AtomicInt
 import matt.lang.sync
 import matt.log.NONE
 import matt.log.logger.Logger
@@ -20,7 +21,6 @@ import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.util.concurrent.Semaphore
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -32,7 +32,7 @@ class FullDelayBeforeEveryExecutionTimer(
     MattTimer<MyTimerTask>(name, logger) {
 
     companion object {
-        private val nextThreadID = AtomicInteger()
+        private val nextThreadID = AtomicInt()
     }
 
     override val tasks = MaxList<MyTimerTask>(1)

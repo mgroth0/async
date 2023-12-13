@@ -239,27 +239,7 @@ internal object EmptySuspendList : SuspendList<Nothing>, RandomAccess {
 }
 
 
-suspend fun <T> SuspendMutableCollection<T>.setAll(vararg c: T) {
-
-    clear()
-    c.forEach { add(it) }
-
-}
-
-suspend fun <T> SuspendMutableCollection<T>.setAll(c: SuspendCollection<T>) {
-
-    clear()
-    c.forEach { add(it) }
-
-}
-
-suspend fun <T> SuspendMutableCollection<T>.setAll(c: Collection<T>) {
-
-    clear()
-    c.forEach { add(it) }
-
-}
-
+suspend fun <T> SuspendMutableCollection<T>.setAll(vararg c: T) = setAll(c.asList())
 
 suspend fun <T> SuspendIterable<T>.any(): Boolean {
     if (this is SuspendCollection) return !isEmpty()

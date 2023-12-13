@@ -6,6 +6,7 @@ import matt.async.co.collect.list.suspending
 import matt.async.co.collect.map.SuspendMap
 import matt.async.co.collect.map.SuspendMutableMap
 import matt.async.co.collect.map.suspending
+import matt.lang.anno.SeeURL
 
 interface SuspendIterable<out E> {
     suspend operator fun iterator(): SuspendIterator<E>
@@ -81,9 +82,14 @@ interface SuspendMutableCollection<E> : SuspendCollection<E> {
         return removed
     }
 
+
+    @SeeURL("https://youtrack.jetbrains.com/issue/KT-63233/K2-false-negative-Class-is-not-abstract-and-does-not-implement-abstract-member-with-abstract-suspend-function")
+    suspend fun setAll(c: Collection<E>)
+
 }
 
 
+@SeeURL("https://youtrack.jetbrains.com/issue/KT-63233/K2-false-negative-Class-is-not-abstract-and-does-not-implement-abstract-member-with-abstract-suspend-function")
 open class SuspendWrapMutableCollection<E>(private val col: MutableCollection<E>) : SuspendWrapCollection<E>(col),
     SuspendMutableCollection<E> {
 

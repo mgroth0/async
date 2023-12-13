@@ -1,18 +1,14 @@
-package matt.async.pool.wrapper
+package matt.async.thread.pool.wrapper
 
+import matt.async.thread.executors.ExceptionHandlingFailableDaemonPool
 import matt.lang.function.Produce
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionHandler
 import java.util.concurrent.ThreadFactory
-import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import kotlin.time.Duration
-
-
-
 
 
 class ThreadPoolExecutorWrapper(
@@ -24,8 +20,8 @@ class ThreadPoolExecutorWrapper(
     handler: RejectedExecutionHandler = AbortPolicy() /*java default*/
 ) : Executor {
 
-    private val pool = ThreadPoolExecutor(
-        corePoolSize, maxPoolSize, keepAliveTime.inWholeMilliseconds, MILLISECONDS, workQueue, threadFactory, handler
+    private val pool = ExceptionHandlingFailableDaemonPool(
+        corePoolSize, maxPoolSize, keepAliveTime, workQueue, threadFactory, handler
     )
 
     override fun execute(command: Runnable) {

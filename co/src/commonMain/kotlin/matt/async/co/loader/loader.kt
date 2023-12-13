@@ -12,23 +12,36 @@ import matt.obs.listen.bool.whenTrueOnce
 import matt.progress.SimpleMutableProgress
 import kotlin.time.Duration.Companion.milliseconds
 
+interface UsageContext
 
 class RequestResolver<T, S>(
     val loader: Loader<S>,
 ) {
-    private val requested = mutableMapOf<S, ObjectRequest<T, S>>()
-    fun requestOrLink(
-        source: S,
-        generator: ObjectLoader<T, S>
-    ) = ObjectRequest(source, generator).also { requestOrLink(it) }
+    private val requested = mutableMapOf<S, MutableSet<ObjectRequest<T, S>>>()
 
-    fun requestOrLink(req: ObjectRequest<T, S>) {
-        val existingRequest = requested[req.source]
-        if (existingRequest == null) {
+    suspend fun requestOrLink(
+        source: S,
+        generator: ObjectLoader<T, S>,
+        usageContextId: UsageContext
+    ) = ObjectRequest(source, generator, usageContextId).also { requestOrLink(it) }
+
+    suspend fun requestOrLink(
+        req: ObjectRequest<T, S>,
+    ) {
+        val existingRequests = requested[req.source]
+        if (existingRequests == null) {
             loader.request(req)
-            requested[req.source] = req
+            requested[req.source] = mutableSetOf(req)
         } else {
-            req.link(existingRequest)
+
+            if (existingRequests.any { it.usageContextId == req.usageContextId }) {
+                req.linkCopy(existingRequests.first())
+            } else {
+                req.steal(existingRequests.first())
+            }
+
+            existingRequests.add(req)
+
         }
 
     }
@@ -37,6 +50,11 @@ class RequestResolver<T, S>(
 
 const val MAX_RETRY_PER_IM = 10
 val RETRY_INTERVAL = 100.milliseconds
+
+private fun ObjectRequestBase2<*, *>.singleElementLoader(
+    coScope: CoroutineScope,
+    progress: SimpleMutableProgress,
+) = SingleElementLoader(this, coScope, progress)
 
 class Loader<S>(
     private val coScope: CoroutineScope,
@@ -51,10 +69,11 @@ class Loader<S>(
 
     fun <T> request(
         source: S,
-        generator: ObjectLoader<T, S>
+        generator: ObjectLoader<T, S>,
+        usageContextId: UsageContext
     ): ObjectRequestBase<T, S> {
         requireNot(started)
-        val req = ObjectRequest(source, generator)
+        val req = ObjectRequest(source, generator, usageContextId)
         inputRequests += req
         return req
     }
@@ -73,19 +92,24 @@ class Loader<S>(
         println("num root requests = ${inputRequests.size}")
 
 
+
         progress.initDivider(totalParts = inputRequests.size.toUInt())
         progress.status("Loading Resources")
 
+
         val batches = inputRequests.map {
-            SingleElementLoader(
-                it,
-                coScope = coScope,
-                progress = progress,
-            )
+//            it.singleElementLoader(coScope = coScope, progress = progress)
+            SingleElementLoader(it, coScope, progress)
+//            it
+
+//            SingleElementLoader(
+//                it,
+//                coScope = coScope,
+//                progress = progress,
+//            )
         }
         if (maxConcurrentRequests == null) {
             batches.forEach {
-
                 it.start()
             }
         } else {
@@ -181,29 +205,49 @@ interface ObjectRequestBase<T, S> {
 interface ObjectRequestBase2<T, S> : ObjectRequestBase<T, S> {
     suspend fun fulfill(e: T)
     val generator: ObjectLoader<T, S>
-
 }
 
 class ObjectRequest<T, S>(
     override val source: S,
-    override val generator: ObjectLoader<T, S>
+    override val generator: ObjectLoader<T, S>,
+    internal val usageContextId: UsageContext
 ) : ObjectRequestBase2<T, S> {
+
+
     private var slot = SuspendLoadedValueSlot<T>()
+
     override suspend fun fulfill(e: T) {
         slot.putLoadedValue(e)
     }
 
     override suspend fun invokeNowOrOnLoad(op: Op) {
-        slot.invokeNowOrOnLoad(op)
+        slot.invokeNowOrOnLoad {
+            op()
+        }
     }
 
     override suspend fun await(): T {
         return slot.await()
     }
 
-    override fun getNowUnsafe() = slot.getNowUnsafe()
+    suspend fun reUse(t: T) = generator.reUse(t)
 
-    fun link(source: ObjectRequest<T, S>) {
+    override fun getNowUnsafe() = slot.getNowUnsafe()
+//
+//    fun createSlotForCopiedObject(): SuspendLoadedValueSlot<T> {
+//        val copiedObjectSlot = SuspendLoadedValueSlot<T>()
+//        generator.generateFrom(source)
+//        invokeNowOrOnLoad {
+//            copiedObjectSlot
+//        }
+//    }
+
+    suspend fun linkCopy(source: ObjectRequest<T, S>) {
+        slot = source.slot.map { source.reUse(it) }
+    }
+
+    suspend fun steal(source: ObjectRequest<T, S>) {
+        /*can be much more performant, but must ensure that it is not used at the same time as the source*/
         slot = source.slot
     }
 

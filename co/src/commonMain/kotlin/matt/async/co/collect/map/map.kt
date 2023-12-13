@@ -1,5 +1,6 @@
 package matt.async.co.collect.map
 
+import kotlinx.coroutines.flow.Flow
 import matt.async.co.collect.SuspendCollection
 import matt.async.co.collect.SuspendMutableCollection
 import matt.async.co.collect.set.SuspendMutableSet
@@ -124,6 +125,8 @@ interface SuspendMutableMap<K, V> : SuspendMap<K, V> {
         value: V
     ): V?
 
+    suspend fun chunkFlow(): Flow<Map<K, V>>
+
 
 }
 
@@ -162,6 +165,10 @@ class SuspendMutableMapWrap<K, V>(override val map: MutableMap<K, V>) : SuspendM
         key: K,
         value: V
     ): V? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun chunkFlow(): Flow<Map<K, V>> {
         TODO("Not yet implemented")
     }
 }
@@ -215,10 +222,10 @@ class SuspendMutableEntryWrap<K, V>(override val entry: MutableMap.MutableEntry<
     override suspend fun setValue(newValue: V): V {
         TODO("Not yet implemented")
     }
-/*
-    override fun delete() {
-        TODO("Not yet implemented")
-    }*/
+    /*
+        override fun delete() {
+            TODO("Not yet implemented")
+        }*/
 
 }
 

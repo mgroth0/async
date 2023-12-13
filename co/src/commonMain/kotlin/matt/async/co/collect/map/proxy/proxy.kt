@@ -1,5 +1,7 @@
 package matt.async.co.collect.map.proxy
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import matt.async.co.collect.SuspendMutableCollection
 import matt.async.co.collect.ext.map
 import matt.async.co.collect.ext.toSet
@@ -126,5 +128,8 @@ class SuspendProxyMap<SK : Any, SV : Any, TK : Any, TV : Any>(
         return innerMap.containsKey(key.toSK())
     }
 
+    override suspend fun chunkFlow(): Flow<Map<TK, TV>> {
+        return innerMap.chunkFlow().map { it.mapKeys { it.key.toTK() }.mapValues { it.value.toTV() } }
+    }
 
 }

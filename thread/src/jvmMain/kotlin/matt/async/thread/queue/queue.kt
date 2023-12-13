@@ -1,6 +1,7 @@
 package matt.async.thread.queue
 
 import matt.async.thread.daemon
+import matt.lang.atomic.AtomicLong
 import matt.lang.exec.InPlaceExecutor
 import matt.lang.function.Produce
 import matt.lang.go
@@ -11,7 +12,6 @@ import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.atomic.AtomicLong
 import kotlin.time.TimeSource.Monotonic
 
 interface QueueWorkerInter : ProceedingIdea {

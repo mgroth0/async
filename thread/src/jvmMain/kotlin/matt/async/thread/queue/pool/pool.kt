@@ -4,7 +4,6 @@ import matt.async.thread.queue.JobLike
 import matt.async.thread.queue.QueueWorker
 import matt.async.thread.queue.QueueWorkerInter
 import matt.lang.function.Consume
-import matt.lang.lastIndex
 
 class QueueWorkerPool(
     num: Int, prefix: String

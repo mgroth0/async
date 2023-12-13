@@ -1,7 +1,9 @@
 package matt.async.thread.runner
 
+import matt.async.thread.executors.ExceptionHandlingFailableDaemonPool
 import matt.async.thread.namedThread
 import matt.lang.NUM_LOGICAL_CORES
+import matt.lang.atomic.AtomicLong
 import matt.lang.function.Convert
 import matt.lang.function.On
 import matt.lang.function.Produce
@@ -10,9 +12,7 @@ import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 import matt.model.flowlogic.runner.Run
 import matt.model.flowlogic.runner.Runner
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.atomic.AtomicLong
 
 
 object ThreadRunner : Runner {
@@ -72,7 +72,7 @@ class ResultRun<R>(private val result: LoadedValueSlot<R>) : Run<R> {
 
 
 class ThreadPoolRunner : Runner {
-    private var threadPool: ExecutorService = Executors.newFixedThreadPool(NUM_LOGICAL_CORES)
+    private var threadPool: ExecutorService = ExceptionHandlingFailableDaemonPool(NUM_LOGICAL_CORES)
 
     @Synchronized
     fun shutdownNow() = threadPool.shutdownNow()
@@ -80,7 +80,7 @@ class ThreadPoolRunner : Runner {
     @Synchronized
     fun reset() {
         shutdownNow()
-        threadPool = Executors.newFixedThreadPool(NUM_LOGICAL_CORES)
+        threadPool = ExceptionHandlingFailableDaemonPool(NUM_LOGICAL_CORES)
     }
 
     @Synchronized

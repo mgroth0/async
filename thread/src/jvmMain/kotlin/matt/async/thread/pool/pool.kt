@@ -1,9 +1,10 @@
-package matt.async.pool
+package matt.async.thread.pool
 
-import matt.async.pool.wrapper.ThreadPoolExecutorWrapper
 import matt.async.pri.MyThreadPriorities
 import matt.async.pri.MyThreadPriorities.CREATING_NEW_CACHE
+import matt.async.thread.pool.wrapper.ThreadPoolExecutorWrapper
 import matt.lang.NUM_LOGICAL_CORES
+import matt.lang.atomic.AtomicInt
 import matt.lang.function.Produce
 import matt.lang.go
 import java.util.concurrent.Executor
@@ -11,12 +12,11 @@ import java.util.concurrent.Future
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.seconds
 
 class DaemonPoolExecutor : Executor {
 
-    private val threadIndexCounter = AtomicInteger(0)
+    private val threadIndexCounter = AtomicInt(0)
 
     private fun threadFactory(
         tag: String,
@@ -58,8 +58,8 @@ class DaemonPoolExecutor : Executor {
 
     val activeCount get() = pool.activeCount + lowPriorityPool.activeCount
 
-    private val jobStartedCount = AtomicInteger()
-    private val jobFinishedCount = AtomicInteger()
+    private val jobStartedCount = AtomicInt()
+    private val jobFinishedCount = AtomicInt()
 
     fun execute(op: () -> Unit) {
         pool.execute {

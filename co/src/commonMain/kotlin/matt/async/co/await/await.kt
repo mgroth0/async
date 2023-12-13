@@ -5,14 +5,18 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import matt.collect.itr.iterateM
 import matt.lang.anno.SeeURL
-import matt.lang.function.Op
+import matt.lang.assertions.require.requireNull
+import matt.lang.function.SuspendConsume
 import matt.lang.go
 import matt.lang.model.value.Value
 import matt.lang.model.value.ValueWrapper
-import matt.lang.assertions.require.requireNull
 import matt.model.flowlogic.await.SuspendAwaitable
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
+
+
+abstract class SuspendAwaitableBase<T> : SuspendAwaitable<T>
+
 
 @SeeURL("https://github.com/Kotlin/kotlinx.coroutines/issues/59")
 @SeeURL("https://gist.github.com/octylFractal/fd86b67bbdbf61f02c853142aced0534")
@@ -28,24 +32,26 @@ class SuspendLoadedValueSlot<T>() : SuspendAwaitable<T> {
         requireNull(slot) {
             "cannot place loaded value twice"
         }
-        slot = Value(t)
+        val v = Value(t)
+        slot = v
         continuations.forEach {
             it.resume(t)
         }
         continuations.clear()
         onLoadOps.iterateM {
-            it()
+            it(v.value)
             remove()
         }
     }
 
     private val continuations = mutableSetOf<Continuation<T>>()
 
-    private val onLoadOps = mutableListOf<Op>()
+    private val onLoadOps = mutableListOf<SuspendConsume<T>>()
 
-    suspend fun invokeNowOrOnLoad(op: Op) = mutex.withLock {
-        if (slot != null) {
-            op()
+    suspend fun invokeNowOrOnLoad(op: SuspendConsume<T>) = mutex.withLock {
+        val v = slot
+        if (v != null) {
+            op(v.value)
         } else {
             onLoadOps += op
         }
@@ -54,18 +60,23 @@ class SuspendLoadedValueSlot<T>() : SuspendAwaitable<T> {
     override suspend fun await(): T {
         mutex.lock()
         slot?.go {
-//            println("unlocking 1")
             mutex.unlock()
-//            println("unlocking 2")
             return it.value
         }
-        return suspendCancellableCoroutine<T> {
+        return suspendCancellableCoroutine {
             continuations.add(it)
-//            println("unlocking 3")
             mutex.unlock()
-//            println("unlocking 4")
         }
     }
+
+    suspend fun <R> map(transform: suspend (T) -> R): SuspendLoadedValueSlot<R> {
+        val newSlot = SuspendLoadedValueSlot<R>()
+        invokeNowOrOnLoad {
+            newSlot.putLoadedValue(transform(it))
+        }
+        return newSlot
+    }
+
 }
 
 
