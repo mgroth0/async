@@ -13,18 +13,16 @@
     },
     {
       "type": "Project",
-      "cfg": "jvmTestImplementation",
+      "cfg": "commonTestImplementation",
       "path": ":k:test"
-    },
-    {
-      "type": "Project",
-      "cfg": "jvmTestImplementation",
-      "path": ":k:async:thread"
     }
   ],
   "jvm": {
   },
   "js": {
     "type": "lib"
+  },
+  "android": {
+    "type": "Lib"
   }
 }

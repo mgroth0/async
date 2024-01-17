@@ -3,7 +3,7 @@
   "dependencies": [
     {
       "type": "Project",
-      "cfg": "commonJvmAndroidMainApi",
+      "cfg": "commonMainApi",
       "path": ":k:async"
     },
     {

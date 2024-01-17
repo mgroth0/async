@@ -4,7 +4,6 @@ package matt.async.co
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import matt.lang.go
 import matt.model.code.successorfail.CodeFailedReturn
@@ -28,16 +27,6 @@ fun CoroutineScope.blockAndJoin() {
 }
 
 
-fun Job.blockAndJoin() {
-    val latch = SimpleThreadLatch()
-    var t: Throwable? = null
-    invokeOnCompletion {
-        t = it
-        latch.open()
-    }
-    latch.await()
-    t?.go { throw it }
-}
 
 @Suppress("OPT_IN_USAGE")
 fun <T> Deferred<T>.blockAndAwait(): T {

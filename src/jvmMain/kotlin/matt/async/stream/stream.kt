@@ -5,6 +5,8 @@ import matt.model.code.output.ActualOutputStreams
 import matt.prim.str.NEW_LINE_CHARS
 import matt.prim.str.NEW_LINE_STRINGS
 import java.io.OutputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 
 
 class LambdaOutputStream(private val op: (Int) -> Unit) : OutputStream() {
@@ -74,4 +76,12 @@ class PrefixedStreams(
     override val err = LambdaLineOutputStream {
         println("GRADLE $errPrefix:${it}")
     }
+}
+
+
+class PipedStreams(): ActualOutputStreams {
+    val outInput = PipedInputStream()
+    override val out = PipedOutputStream(outInput)
+    val errInput = PipedInputStream()
+    override val err = PipedOutputStream(errInput)
 }
