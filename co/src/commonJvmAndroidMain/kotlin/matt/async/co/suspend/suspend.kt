@@ -10,13 +10,13 @@ import matt.lang.model.value.Value
 @SeeURL("https://github.com/Kotlin/kotlinx.coroutines/issues/706")
 fun <T> realSuspendLazy(op: suspend () -> T) = RealSuspendLazy(op)
 
-class RealSuspendLazy<T>(private val op: suspend () -> T) {
+class RealSuspendLazy<T>(private val op: suspend () -> T): SuspendLazy<T> {
 
     private val mutex = Mutex()
 
     private var value: Value<T>? = null
 
-    suspend fun get(): T {
+    override suspend fun get(): T {
         return mutex.withLock {
             if (value == null) {
                 value = Value(op())
@@ -32,5 +32,8 @@ class RealSuspendLazy<T>(private val op: suspend () -> T) {
 }
 
 
+interface SuspendLazy<T> {
+    suspend fun get(): T
+}
 
 

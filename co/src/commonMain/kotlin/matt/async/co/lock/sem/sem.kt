@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import matt.async.co.latch.SimpleCoLatch
 import matt.async.rw.RW_WRITE_PERMIT
 import matt.async.rw.ReadWriteSem
-import matt.lang.anno.SeeURL
 import matt.lang.function.SuspendOp
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
@@ -169,8 +168,6 @@ fun Semaphore.releaseN(count: Int) {
 }
 
 
-@SeeURL("https://youtrack.jetbrains.com/issue/KT-63414/K2-Contracts-false-positive-Result-has-wrong-invocation-kind-when-invoking-a-function-returning-a-value-with-contract")
-@Suppress("WRONG_INVOCATION_KIND")
 @OptIn(ExperimentalContracts::class)
 suspend inline fun <T> Semaphore.withPermits(
     n: Int,

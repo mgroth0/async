@@ -8,16 +8,19 @@ import matt.async.thread.executors.ThreadNamingExecutor
 import matt.async.thread.namedThread
 import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
-import matt.lang.function.Op
-import matt.lang.massert
 import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireIs
 import matt.lang.atomic.AtomicInt
+import matt.lang.function.Op
+import matt.lang.massert
 import matt.lang.sync
+import matt.lang.sync.SimpleReferenceMonitor
 import matt.log.NONE
 import matt.log.logger.Logger
 import matt.model.code.vals.waitfor.WAIT_FOR_MS
 import matt.model.flowlogic.latch.SimpleThreadLatch
+import matt.model.op.prints.plusAssign
+import matt.model.op.prints.tab
 import matt.time.UnixTime
 import matt.time.dur.sleep
 import java.util.concurrent.Semaphore
@@ -206,7 +209,7 @@ open class MyTimerTask(
     private val onlyIf: () -> Boolean = { true },
     private val minRateMillis: Long? = null
 ) {
-    override fun toString() = name?.let { "TimerTask:${it}" } ?: super.toString()
+    final override fun toString() = name?.let { "TimerTask:${it}" } ?: super.toString()
 
     var cancelled = false
         private set
@@ -288,12 +291,12 @@ abstract class MattTimer<T : MyTimerTask>(
     val name: String? = null,
     val logger: Logger = NONE
 ) {
-    override fun toString(): String {
+    final override fun toString(): String {
         return if (name != null) "Timer:${name}"
         else super.toString()
     }
 
-    internal val schedulingMonitor = object {}
+    internal val schedulingMonitor = SimpleReferenceMonitor()
 
     internal open val tasks = mutableListOf<T>()
 

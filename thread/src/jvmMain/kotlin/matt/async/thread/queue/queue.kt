@@ -81,7 +81,7 @@ class QueueWorker(name: String? = null) : QueueWorkerInter, InPlaceExecutor() {
 
     abstract inner class BaseJob {
         internal abstract fun run()
-        override fun toString() = "a job"
+        final override fun toString() = "a job"
     }
 
     inner class Job<T> internal constructor(

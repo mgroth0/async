@@ -6,7 +6,6 @@ import matt.async.par.use
 import matt.async.thread.namedThread
 import matt.lang.NUM_LOGICAL_CORES
 import matt.lang.function.Op
-import matt.lang.println
 import matt.model.code.errreport.ThrowReport
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.ExecutorService
@@ -50,7 +49,7 @@ class ExceptionHandlingFailableDaemonPool(
     ) {
         if (t != null) {
             println("Got exception in ExceptionHandlingFailableDaemonPool! (without this class, this would have been silently ignored)")
-            ThrowReport(null, t).println()
+            ThrowReport(null, t).print()
         }
     }
 }

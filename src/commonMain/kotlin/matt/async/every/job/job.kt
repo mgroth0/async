@@ -23,7 +23,7 @@ abstract class RepeatableDelayableJob<L : SimpleLatch>(
     fun start() = coreLoopJob.start()
 
     protected var cancelled: Boolean = false
-    override fun cancel() {
+    final override fun cancel() {
         cancelled = true
         coreLoopJob.signalToStop()
     }

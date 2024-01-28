@@ -4,23 +4,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import matt.lang.anno.SeeURL
-import kotlin.contracts.InvocationKind.EXACTLY_ONCE
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmInline
 
-@SeeURL("https://youtrack.jetbrains.com/issue/KT-63416/K2-Contracts-False-positive-Leaked-in-place-lambda-warning-caused-by-suspend-lambda-with-callsInPlace-contract")
-@SeeURL("https://youtrack.jetbrains.com/issue/KT-63414/K2-Contracts-false-positive-Result-has-wrong-invocation-kind-when-invoking-a-function-returning-a-value-with-contract")
-@Suppress("WRONG_INVOCATION_KIND", "LEAKED_IN_PLACE_LAMBDA")
 @SeeURL("https://gist.github.com/elizarov/9a48b9709ffd508909d34fab6786acfe")
 @SeeURL("https://github.com/Kotlin/kotlinx.coroutines/issues/1686")
-/*I made it inline*/
-/*my contract*/
-suspend inline fun <T> Mutex.withReentrantLock(crossinline block: suspend () -> T): T {
-    contract {
-        callsInPlace(block, EXACTLY_ONCE)
-    }
+suspend fun <T> Mutex.withReentrantLock(block: suspend () -> T): T {
     val key = ReentrantMutexContextKey(this)
     // call block directly when this mutex is already locked in the context
     if (coroutineContext[key] != null) return block()
