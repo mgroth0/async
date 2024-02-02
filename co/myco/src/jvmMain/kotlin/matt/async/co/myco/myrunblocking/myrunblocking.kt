@@ -93,7 +93,7 @@ private class BlockingCoroutine<T>(
         registerTimeLoopThread()
         try {
             eventLoop?.incrementUseCount()
-            println("eventLoop=${eventLoop}")
+            println("eventLoop=$eventLoop")
             try {
                 while (true) {
                     if (Thread.interrupted()) throw InterruptedException().also { cancelCoroutine(it) }
@@ -106,10 +106,12 @@ private class BlockingCoroutine<T>(
                     parkNanos(this, parkNanos)
                     println("unparked")
                 }
-            } finally { /* paranoia*/
+            } finally {
+                /* paranoia*/
                 eventLoop?.decrementUseCount()
             }
-        } finally { /*paranoia*/
+        } finally {
+            /*paranoia*/
             unregisterTimeLoopThread()
         }
         /*now return result*/

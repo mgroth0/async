@@ -1,12 +1,9 @@
 package matt.async
 
-
-//actual typealias CommonTest = Test
-
+// actual typealias CommonTest = Test
 
 class AsyncAndroidUnitTests() {
-
-//    fun runCommonTestBecauseItWillNotRunOnItsOwnApparently() {
+    //    fun runCommonTestBecauseItWillNotRunOnItsOwnApparently() {
 //        CommonAsyncTests().doValidateThreadPriorities()
 //    }
 }

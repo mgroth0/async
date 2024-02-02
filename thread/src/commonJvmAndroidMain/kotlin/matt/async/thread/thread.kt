@@ -58,10 +58,8 @@ fun daemon(
     start: Boolean = true,
     priority: MyThreadPriorities? = null,
     block: () -> Unit
-): Thread {
-    return namedThread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
-        block()
-    }
+): Thread = namedThread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
+    block()
 }
 
 /*enforcing thread naming*/

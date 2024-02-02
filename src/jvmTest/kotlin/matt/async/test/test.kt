@@ -1,11 +1,8 @@
 package matt.async.test
 
-
 import matt.async.every.EveryFirst
 import matt.async.pri.MyThreadPriorities
 import matt.test.scaffold.TestScaffold
-
-
 
 class AsyncTests : TestScaffold() {
     override fun initEnums() {
@@ -25,5 +22,3 @@ class AsyncTests : TestScaffold() {
     override fun runFunctions() {
     }
 }
-
-

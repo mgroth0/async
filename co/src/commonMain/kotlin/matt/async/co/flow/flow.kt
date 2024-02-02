@@ -15,9 +15,7 @@ suspend fun <T> Flow<T>.joinToString(
     limit: Int = -1,
     truncated: CharSequence = "...",
     transform: ((T) -> CharSequence)? = null
-): String {
-    return joinTo(StringBuilder(), separator, prefix, postfix, limit, truncated, transform).toString()
-}
+): String = joinTo(StringBuilder(), separator, prefix, postfix, limit, truncated, transform).toString()
 
 @Suppress("BlockingMethodInNonBlockingContext")
 suspend fun <T, A : Appendable> Flow<T>.joinTo(

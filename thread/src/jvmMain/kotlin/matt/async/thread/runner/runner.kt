@@ -51,9 +51,7 @@ class FutureRun<R> internal constructor(private val future: Future<R>) : Run<R> 
         }
     }
 
-    override fun <RR> join(op: Convert<R, RR>): RR {
-        return op(future.get())
-    }
+    override fun <RR> join(op: Convert<R, RR>): RR = op(future.get())
 }
 
 
@@ -65,9 +63,7 @@ class ResultRun<R>(private val result: LoadedValueSlot<R>) : Run<R> {
         }
     }
 
-    override fun <RR> join(op: Convert<R, RR>): RR {
-        return op(result.await())
-    }
+    override fun <RR> join(op: Convert<R, RR>): RR = op(result.await())
 }
 
 

@@ -71,10 +71,10 @@ class PrefixedStreams(
     constructor(prefix: String) : this(outPrefix = prefix, errPrefix = "$prefix-ERR")
 
     override val out = LambdaLineOutputStream {
-        println("GRADLE $outPrefix:${it}")
+        println("GRADLE $outPrefix:$it")
     }
     override val err = LambdaLineOutputStream {
-        println("GRADLE $errPrefix:${it}")
+        println("GRADLE $errPrefix:$it")
     }
 }
 

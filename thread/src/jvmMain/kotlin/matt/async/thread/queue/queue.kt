@@ -29,9 +29,7 @@ class QueueWorker(name: String? = null) : QueueWorkerInter, InPlaceExecutor() {
         private var nextId = AtomicLong(0)
     }
 
-    override fun <R> runInPlace(op: Produce<R>): R {
-        return schedule { op() }.await()
-    }
+    override fun <R> runInPlace(op: Produce<R>): R = schedule { op() }.await()
 
     var verbose = false
 

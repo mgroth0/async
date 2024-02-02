@@ -30,8 +30,6 @@ class ThreadPoolExecutorWrapper(
 
     val activeCount get() = pool.activeCount
 
-    fun <T> submit(op: Produce<T>): Future<T> {
-        return pool.submit(op)
-    }
+    fun <T> submit(op: Produce<T>): Future<T> = pool.submit(op)
 
 }

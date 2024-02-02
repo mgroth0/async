@@ -19,15 +19,13 @@ fun threadedPipedOutput(
 fun threadedPipedInput(
     readOp: BufferedReader.() -> Unit,
     pipeBrokenOp: UncheckedIOException.() -> Unit
-): PipedInputStream {
-    return PipedInputStream().apply {
-        namedThread("threadedPipedInput Thread") {
-            try {
-                bufferedReader().readOp()
-            } catch (e: UncheckedIOException) {
-                requireIn("Pipe broken", e.toString())
-                e.pipeBrokenOp()
-            }
+): PipedInputStream = PipedInputStream().apply {
+    namedThread("threadedPipedInput Thread") {
+        try {
+            bufferedReader().readOp()
+        } catch (e: UncheckedIOException) {
+            requireIn("Pipe broken", e.toString())
+            e.pipeBrokenOp()
         }
     }
 }

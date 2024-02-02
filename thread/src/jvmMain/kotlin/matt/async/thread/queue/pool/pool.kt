@@ -31,9 +31,7 @@ class FakeWorkerPool() : QueueWorkerInter {
     override fun <T> schedule(timer: String?, op: () -> T): JobLike<T> {
         val t = op()
         return object : JobLike<T> {
-            override fun await(): T {
-                return t
-            }
+            override fun await(): T = t
 
             override fun whenDone(c: Consume<T>) {
                 c(t)

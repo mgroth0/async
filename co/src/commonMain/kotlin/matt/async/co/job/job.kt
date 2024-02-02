@@ -24,8 +24,8 @@ class RepeatableDelayableJobCoImpl(
     private val coExecutor: CoNamingExecutor = CoNamingExecutor(scope),
     op: Op
 ) : RepeatableDelayableJob<SimpleCoLatch>(
-    name = name, interJobInterval = refreshRate, executor = coExecutor, op = op
-), ReferenceMonitor {
+        name = name, interJobInterval = refreshRate, executor = coExecutor, op = op
+    ), ReferenceMonitor {
 
 
     override fun newLatch() = SimpleCoLatch()
@@ -94,7 +94,7 @@ class RepeatableDelayableJobCoImpl(
     private var nextRunTime: UnixTime? = null
     override val coreLoopJob = RepeatingCoroutineJob(
         interJobInterval = refreshMillis.milliseconds,
-        name = "RepeatableDelayableJob Thread (name=${name})",
+        name = "RepeatableDelayableJob Thread (name=$name)",
         scope = scope,
         op = {
             val shouldRun = inSync(this) {

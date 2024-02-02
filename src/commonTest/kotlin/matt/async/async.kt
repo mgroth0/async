@@ -1,7 +1,7 @@
 package matt.async
 
 import kotlin.test.Test
-//expect annotation class CommonTest()
+// expect annotation class CommonTest()
 
 class CommonAsyncTests {
     @Test
@@ -9,6 +9,5 @@ class CommonAsyncTests {
         validateThreadPriorities()
     }
 }
-
 
 internal expect fun validateThreadPriorities()

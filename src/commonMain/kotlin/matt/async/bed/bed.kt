@@ -7,21 +7,19 @@ import matt.lang.sync.inSync
 
 interface RepeatingJob : ProceedingIdea {
     fun start()
+
     fun signalToStop()
 }
-
 
 abstract class RepeatingJobBase : RepeatingJob, ReferenceMonitor {
     private var started = false
 
-    final override fun start() = inSync {
-        requireNot(started)
-        started = true
-        protectedStart()
-    }
+    final override fun start() =
+        inSync {
+            requireNot(started)
+            started = true
+            protectedStart()
+        }
 
     protected abstract fun protectedStart()
 }
-
-
-

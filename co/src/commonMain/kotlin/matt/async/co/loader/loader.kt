@@ -226,9 +226,7 @@ class ObjectRequest<T, S>(
         }
     }
 
-    override suspend fun await(): T {
-        return slot.await()
-    }
+    override suspend fun await(): T = slot.await()
 
     suspend fun reUse(t: T) = generator.reUse(t)
 

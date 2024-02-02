@@ -53,9 +53,7 @@ value class PrimitiveMutex(private val mutex: Mutex = Mutex()) : MutexWrapper {
     override val isLocked: Boolean
         get() = mutex.isLocked
 
-    override suspend fun <R> withLock(op: suspend () -> R): R {
-        return mutex.withLock {
-            op()
-        }
+    override suspend fun <R> withLock(op: suspend () -> R): R = mutex.withLock {
+        op()
     }
 }

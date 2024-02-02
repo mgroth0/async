@@ -115,7 +115,7 @@ class AccurateTimer(
         now: UnixTime
     ) {
         logger += ("DEBUGGING $this")
-        logger.tab("nextTask=${nextTask}")
+        logger.tab("nextTask=$nextTask")
         logger.tab("nexts (rel to now):")
         tasks.forEach {
             logger.tab("\t${(it.next!! - now)}")
@@ -209,7 +209,7 @@ open class MyTimerTask(
     private val onlyIf: () -> Boolean = { true },
     private val minRateMillis: Long? = null
 ) {
-    final override fun toString() = name?.let { "TimerTask:${it}" } ?: super.toString()
+    final override fun toString() = name?.let { "TimerTask:$it" } ?: super.toString()
 
     var cancelled = false
         private set
@@ -268,13 +268,13 @@ class AccurateTimerTask(
     onlyIf: () -> Boolean = { true },
     minRateMillis: Long? = null
 ) : MyTimerTask(
-    delay = delay,
-    op = op,
-    name = name,
-    execSem = execSem,
-    onlyIf = onlyIf,
-    minRateMillis = minRateMillis
-) {
+        delay = delay,
+        op = op,
+        name = name,
+        execSem = execSem,
+        onlyIf = onlyIf,
+        minRateMillis = minRateMillis
+    ) {
     internal var next: UnixTime? = null
     fun skipNextDelay() {
         timer!!.schedulingMonitor.sync {
@@ -291,10 +291,8 @@ abstract class MattTimer<T : MyTimerTask>(
     val name: String? = null,
     val logger: Logger = NONE
 ) {
-    final override fun toString(): String {
-        return if (name != null) "Timer:${name}"
-        else super.toString()
-    }
+    final override fun toString(): String = if (name != null) "Timer:$name"
+    else super.toString()
 
     internal val schedulingMonitor = SimpleReferenceMonitor()
 

@@ -61,38 +61,26 @@ class MyScope : CoroutineScope {
             innerDispatcher.dispatch(context, block)
         }
 
-        override fun limitedParallelism(parallelism: Int): CoroutineDispatcher {
-            return innerDispatcher.limitedParallelism(parallelism)
-        }
+        override fun limitedParallelism(parallelism: Int): CoroutineDispatcher = innerDispatcher.limitedParallelism(parallelism)
 
         override val key: kotlin.coroutines.CoroutineContext.Key<*>
             get() = innerDispatcher.key
 
-        override fun <E : Element> get(key: kotlin.coroutines.CoroutineContext.Key<E>): E? {
-            return innerDispatcher.get(key)
-        }
+        override fun <E : Element> get(key: kotlin.coroutines.CoroutineContext.Key<E>): E? = innerDispatcher.get(key)
 
         override fun dispatchYield(
             context: CoroutineContext,
             block: Runnable
-        ) {
-            return innerDispatcher.dispatchYield(context, block)
-        }
+        ) = innerDispatcher.dispatchYield(context, block)
 
-        override fun isDispatchNeeded(context: CoroutineContext): Boolean {
-            return innerDispatcher.isDispatchNeeded(context)
-        }
+        override fun isDispatchNeeded(context: CoroutineContext): Boolean = innerDispatcher.isDispatchNeeded(context)
 
-        override fun minusKey(key: kotlin.coroutines.CoroutineContext.Key<*>): CoroutineContext {
-            return innerDispatcher.minusKey(key)
-        }
+        override fun minusKey(key: kotlin.coroutines.CoroutineContext.Key<*>): CoroutineContext = innerDispatcher.minusKey(key)
 
         override fun <R> fold(
             initial: R,
             operation: (R, Element) -> R
-        ): R {
-            return innerDispatcher.fold(initial, operation)
-        }
+        ): R = innerDispatcher.fold(initial, operation)
 
 
     } + outerJob
@@ -140,7 +128,7 @@ class MyJob(private val libraryJob: JobSupport) : CompletableJob, ParentJob, Chi
         /*if (child !is MyJob) {
             err("should only use instances of MyJob")
         }*/
-        println("ATTACHING CHILD (complete=${isCompleted})")
+        println("ATTACHING CHILD (complete=$isCompleted)")
         return libraryJob.attachChild(child)
     }
 

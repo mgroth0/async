@@ -33,14 +33,14 @@ class ExceptionHandlingFailableDaemonPool(
     },
     handler: RejectedExecutionHandler = AbortPolicy()
 ) : ThreadPoolExecutor(
-    corePoolSize,
-    maxPoolSize,
-    keepAliveTime.inWholeMilliseconds,
-    TimeUnit.MILLISECONDS,
-    workQueue,
-    factory,
-    handler
-) {
+        corePoolSize,
+        maxPoolSize,
+        keepAliveTime.inWholeMilliseconds,
+        TimeUnit.MILLISECONDS,
+        workQueue,
+        factory,
+        handler
+    ) {
     constructor(size: Int) : this(size, size, 0.milliseconds)
 
     override fun afterExecute(

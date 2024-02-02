@@ -36,7 +36,7 @@ class DaemonPoolExecutor : Executor {
 
     /*
     [[Executors#newCachedThreadPool]]
-    */
+     */
     private val pool = ThreadPoolExecutorWrapper(
         corePoolSize = 0,
         maxPoolSize = NUM_LOGICAL_CORES,
@@ -83,17 +83,15 @@ class DaemonPoolExecutor : Executor {
         }
     }
 
-    fun <T> submit(op: Produce<T>): Future<T> {
-        return pool.submit(op)
-    }
+    fun <T> submit(op: Produce<T>): Future<T> = pool.submit(op)
 
 
     fun info() = """
-	pool.activeCount = ${pool.activeCount}
-	lowPriorityPool.activeCount = ${lowPriorityPool.activeCount}
-	jobs started = $jobStartedCount
-	jobs finished = $jobFinishedCount
-  """.trimIndent()
+        pool.activeCount = ${pool.activeCount}
+        lowPriorityPool.activeCount = ${lowPriorityPool.activeCount}
+        jobs started = $jobStartedCount
+        jobs finished = $jobFinishedCount
+        """.trimIndent()
 
 }
 

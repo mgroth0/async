@@ -21,11 +21,11 @@ class RepeatableDelayableJobThreadImpl(
     interJobInterval: Duration,
     op: () -> Unit
 ) : RepeatableDelayableJob<SimpleThreadLatch>(
-    name = name,
-    interJobInterval = interJobInterval,
-    executor = ThreadNamingExecutor,
-    op = op
-), ReferenceMonitor {
+        name = name,
+        interJobInterval = interJobInterval,
+        executor = ThreadNamingExecutor,
+        op = op
+    ), ReferenceMonitor {
 
     override fun newQueue(): JQueueWrapper<SimpleThreadLatch> = JQueueWrapper(ConcurrentLinkedQueue())
 
@@ -98,7 +98,7 @@ class RepeatableDelayableJobThreadImpl(
     private var nextRunTime: UnixTime? = null
     override val coreLoopJob = RepeatingThreadJob(
         interJobInterval = refreshMillis.milliseconds,
-        name = "RepeatableDelayableJob Thread (name=${name})",
+        name = "RepeatableDelayableJob Thread (name=$name)",
         op = {
             val shouldRun = inSync(this) {
                 val shouldRun = nextRunTime?.let { it < UnixTime() } == true

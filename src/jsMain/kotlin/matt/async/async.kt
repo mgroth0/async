@@ -7,4 +7,7 @@ class Interval(private val i: Int) {
     fun stop() = window.clearInterval(i)
 }
 
-fun every(d: Duration, op: ()->Unit) = Interval(window.setInterval({ op() }, d.inWholeMilliseconds.toInt()))
+fun every(
+    d: Duration,
+    op: () -> Unit,
+) = Interval(window.setInterval({ op() }, d.inWholeMilliseconds.toInt()))

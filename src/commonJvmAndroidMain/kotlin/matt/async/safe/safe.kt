@@ -15,24 +15,16 @@ class MutSemMap<K, V>(
     override val size: Int get() = map.size
 
     @Synchronized
-    override fun containsKey(key: K): Boolean {
-        return map.containsKey(key)
-    }
+    override fun containsKey(key: K): Boolean = map.containsKey(key)
 
     @Synchronized
-    override fun containsValue(value: V): Boolean {
-        return map.containsValue(value)
-    }
+    override fun containsValue(value: V): Boolean = map.containsValue(value)
 
     @Synchronized
-    override fun get(key: K): V? {
-        return map [ key]
-    }
+    override fun get(key: K): V? = map [ key]
 
     @Synchronized
-    override fun isEmpty(): Boolean {
-        return map.isEmpty()
-    }
+    override fun isEmpty(): Boolean = map.isEmpty()
 
 
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
@@ -51,32 +43,22 @@ class MutSemMap<K, V>(
     override fun put(
         key: K,
         value: V
-    ): V? {
-        return map.put(key, value)
-    }
+    ): V? = map.put(key, value)
 
     @Synchronized
-    override fun putAll(from: Map<out K, V>) {
-        return map.putAll(from)
-    }
+    override fun putAll(from: Map<out K, V>) = map.putAll(from)
 
     @Synchronized
-    override fun remove(key: K): V? {
-        return map.remove(key)
-    }
+    override fun remove(key: K): V? = map.remove(key)
 
     @Synchronized
     fun setIfNotFull(
         k: K,
         v: V
-    ): Boolean {
-
-        return if (map.size < maxsize) {
-            map[k] = v
-            true
-        } else false
-
-    }
+    ): Boolean = if (map.size < maxsize) {
+        map[k] = v
+        true
+    } else false
 
 }
 
@@ -127,9 +109,7 @@ fun Semaphore.thread(op: () -> Unit) {
 
 
 
-fun Semaphore.wrap(op: () -> Unit): () -> Unit {
-    return { with(op) }
-}
+fun Semaphore.wrap(op: () -> Unit): () -> Unit = { with(op) }
 
 
 // Check out FutureTasks too!

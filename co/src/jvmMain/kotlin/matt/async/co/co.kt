@@ -6,10 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.job
 import matt.lang.go
-import matt.model.code.successorfail.CodeFailedReturn
-import matt.model.code.successorfail.FailableReturn
-import matt.model.code.successorfail.SuccessfulReturn
-import matt.model.code.successorfail.resultOr
 import matt.model.flowlogic.latch.SimpleThreadLatch
 import matt.model.flowlogic.latch.asyncloaded.LoadedValueSlot
 
@@ -30,14 +26,13 @@ fun CoroutineScope.blockAndJoin() {
 
 @Suppress("OPT_IN_USAGE")
 fun <T> Deferred<T>.blockAndAwait(): T {
-    val result = LoadedValueSlot<FailableReturn<T>>()
+    val result = LoadedValueSlot<Result<T>>()
     invokeOnCompletion {
         if (it != null) {
-            result.putLoadedValue(CodeFailedReturn(it))
+            result.putLoadedValue(Result.failure(it))
         } else {
-            result.putLoadedValue(SuccessfulReturn(this.getCompleted()))
+            result.putLoadedValue(Result.success(this.getCompleted()))
         }
-
     }
-    return result.await().resultOr { throw (it as CodeFailedReturn).throwable }
+    return result.await().getOrThrow()
 }
