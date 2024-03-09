@@ -1,8 +1,8 @@
 package matt.async
 
-import matt.async.pri.MyThreadPriorities.DEFAULT
-import matt.async.pri.MyThreadPriorities.NOT_IN_USE10
-import matt.async.pri.MyThreadPriorities.THE_DAEMON
+import matt.async.pri.MyThreadPriority.DEFAULT
+import matt.async.pri.MyThreadPriority.NOT_IN_USE10
+import matt.async.pri.MyThreadPriority.THE_DAEMON
 import matt.lang.assertions.require.requireEquals
 
 internal actual fun validateThreadPriorities() {

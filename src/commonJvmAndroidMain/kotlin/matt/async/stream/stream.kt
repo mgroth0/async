@@ -1,6 +1,6 @@
 package matt.async.stream
 
-import matt.lang.go
+import matt.lang.common.go
 import matt.model.code.output.ActualOutputStreams
 import matt.prim.str.NEW_LINE_CHARS
 import matt.prim.str.NEW_LINE_STRINGS
@@ -70,12 +70,14 @@ class PrefixedStreams(
 ) : ActualOutputStreams {
     constructor(prefix: String) : this(outPrefix = prefix, errPrefix = "$prefix-ERR")
 
-    override val out = LambdaLineOutputStream {
-        println("GRADLE $outPrefix:$it")
-    }
-    override val err = LambdaLineOutputStream {
-        println("GRADLE $errPrefix:$it")
-    }
+    override val out =
+        LambdaLineOutputStream {
+            println("GRADLE $outPrefix:$it")
+        }
+    override val err =
+        LambdaLineOutputStream {
+            println("GRADLE $errPrefix:$it")
+        }
 }
 
 

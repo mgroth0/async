@@ -3,14 +3,14 @@ package matt.async.thread.job
 import matt.async.every.job.RepeatableDelayableJob
 import matt.async.thread.executors.ThreadNamingExecutor
 import matt.async.thread.schedule.RepeatingThreadJob
-import matt.collect.queue.JQueueWrapper
+import matt.collect.queue.j.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
-import matt.lang.anno.OnlySynchronizedOnJvm
+import matt.lang.anno.expects.OnlySynchronizedOnJvm
 import matt.lang.assertions.require.requireNot
-import matt.lang.sync.ReferenceMonitor
+import matt.lang.sync.common.ReferenceMonitor
 import matt.lang.sync.inSync
 import matt.model.flowlogic.keypass.KeyPass
-import matt.model.flowlogic.latch.SimpleThreadLatch
+import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.time.UnixTime
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.time.Duration
@@ -25,7 +25,8 @@ class RepeatableDelayableJobThreadImpl(
         interJobInterval = interJobInterval,
         executor = ThreadNamingExecutor,
         op = op
-    ), ReferenceMonitor {
+    ),
+    ReferenceMonitor {
 
     override fun newQueue(): JQueueWrapper<SimpleThreadLatch> = JQueueWrapper(ConcurrentLinkedQueue())
 
@@ -96,32 +97,32 @@ class RepeatableDelayableJobThreadImpl(
     private var lastRunFinished: UnixTime? = null
     private val runningOpFlag = KeyPass()
     private var nextRunTime: UnixTime? = null
-    override val coreLoopJob = RepeatingThreadJob(
-        interJobInterval = refreshMillis.milliseconds,
-        name = "RepeatableDelayableJob Thread (name=$name)",
-        op = {
-            val shouldRun = inSync(this) {
-                val shouldRun = nextRunTime?.let { it < UnixTime() } == true
+    override val coreLoopJob =
+        RepeatingThreadJob(
+            interJobInterval = refreshMillis.milliseconds,
+            name = "RepeatableDelayableJob Thread (name=$name)",
+            op = {
+                val shouldRun =
+                    inSync(this) {
+                        val shouldRun = nextRunTime?.let { it < UnixTime() } == true
+                        if (shouldRun) {
+                            nextRunTime = null
+                            runningOpFlag.hold()
+                        }
+                        shouldRun
+                    }
                 if (shouldRun) {
-                    nextRunTime = null
-                    runningOpFlag.hold()
+                    val tickets = waitTickets.pollUntilEnd()
+                    op()
+                    lastRunFinished = UnixTime()
+                    tickets.forEach { it.open() }
+                    runningOpFlag.release()
                 }
-                shouldRun
             }
-            if (shouldRun) {
-                val tickets = waitTickets.pollUntilEnd()
-                op()
-                lastRunFinished = UnixTime()
-                tickets.forEach { it.open() }
-                runningOpFlag.release()
-            }
-        }
-    )
+        )
 
     init {
         coreLoopJob.start()
     }
-
-
 }
 

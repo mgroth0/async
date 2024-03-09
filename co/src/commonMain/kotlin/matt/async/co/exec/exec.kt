@@ -101,20 +101,6 @@ class ChainedSuspendLauncher(
 
 
 
-//class ScopedExecutor<S>(
-//    private val innerExecutor: ScopedExecutor<S>,
-//    private val outerExecutor: SuspendLauncher
-//) : SuspendExecutor, SuspendLauncher() {
-//
-//    override fun executeLaunching(op: SuspendOp) {
-//        outerExecutor.executeLaunching {
-//            innerExecutor.executeSuspending(op)
-//        }
-//    }
-//}
-//
-//
-//
 
 
 

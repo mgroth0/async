@@ -4,7 +4,8 @@
     {
       "type": "Project",
       "cfg": "jvmMainImplementation",
-      "path": ":k:lang"
+      "path": ":k:lang",
+      "checkIfUsed": false
     },
     {
       "type": "Lib",
@@ -17,11 +18,6 @@
       "key": "kotlinx-coroutines"
     },
     {
-      "type": "Lib",
-      "cfg": "jvmMainApi",
-      "key": "atomicfu"
-    },
-    {
       "type": "Project",
       "cfg": "jvmTestImplementation",
       "path": ":k:test:co"
@@ -29,7 +25,8 @@
     {
       "type": "Project",
       "cfg": "jvmTestImplementation",
-      "path": ":k:test"
+      "path": ":k:test",
+      "checkIfUsed": false
     },
     {
       "type": "Lib",
@@ -42,5 +39,6 @@
   },
   "js": {
     "type": "lib"
-  }
+  },
+  "kover": null
 }

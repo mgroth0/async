@@ -12,9 +12,9 @@ import kotlin.jvm.JvmInline
 @SeeURL("https://github.com/Kotlin/kotlinx.coroutines/issues/1686")
 suspend fun <T> Mutex.withReentrantLock(block: suspend () -> T): T {
     val key = ReentrantMutexContextKey(this)
-    // call block directly when this mutex is already locked in the context
+    /* call block directly when this mutex is already locked in the context */
     if (coroutineContext[key] != null) return block()
-    // otherwise add it to the context and lock the mutex
+    /* otherwise add it to the context and lock the mutex */
     return withContext(ReentrantMutexContextElement(key)) {
         withLock { block() }
     }
@@ -30,7 +30,9 @@ data class ReentrantMutexContextKey(
 
 
 /*this was me*/
-class ReentrantMutex(@PublishedApi internal val mutex: Mutex = Mutex()) : MutexWrapper {
+class ReentrantMutex(
+    @PublishedApi internal val mutex: Mutex = Mutex()
+) : MutexWrapper {
     override val isLocked get() = mutex.isLocked
 
     /*my contract*/
@@ -53,7 +55,8 @@ value class PrimitiveMutex(private val mutex: Mutex = Mutex()) : MutexWrapper {
     override val isLocked: Boolean
         get() = mutex.isLocked
 
-    override suspend fun <R> withLock(op: suspend () -> R): R = mutex.withLock {
-        op()
-    }
+    override suspend fun <R> withLock(op: suspend () -> R): R =
+        mutex.withLock {
+            op()
+        }
 }

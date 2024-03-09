@@ -6,8 +6,8 @@ import kotlinx.coroutines.sync.withLock
 import matt.collect.itr.iterateM
 import matt.lang.anno.SeeURL
 import matt.lang.assertions.require.requireNull
+import matt.lang.common.go
 import matt.lang.function.SuspendConsume
-import matt.lang.go
 import matt.lang.model.value.Value
 import matt.lang.model.value.ValueWrapper
 import matt.model.flowlogic.await.SuspendAwaitable
@@ -28,34 +28,36 @@ class SuspendLoadedValueSlot<T>() : SuspendAwaitable<T> {
 
     fun getNowUnsafe() = slot?.value ?: error("slot was not filled")
 
-    suspend fun putLoadedValue(t: T) = mutex.withLock {
-        requireNull(slot) {
-            "cannot place loaded value twice"
+    suspend fun putLoadedValue(t: T) =
+        mutex.withLock {
+            requireNull(slot) {
+                "cannot place loaded value twice"
+            }
+            val v = Value(t)
+            slot = v
+            continuations.forEach {
+                it.resume(t)
+            }
+            continuations.clear()
+            onLoadOps.iterateM {
+                it(v.value)
+                remove()
+            }
         }
-        val v = Value(t)
-        slot = v
-        continuations.forEach {
-            it.resume(t)
-        }
-        continuations.clear()
-        onLoadOps.iterateM {
-            it(v.value)
-            remove()
-        }
-    }
 
     private val continuations = mutableSetOf<Continuation<T>>()
 
     private val onLoadOps = mutableListOf<SuspendConsume<T>>()
 
-    suspend fun invokeNowOrOnLoad(op: SuspendConsume<T>) = mutex.withLock {
-        val v = slot
-        if (v != null) {
-            op(v.value)
-        } else {
-            onLoadOps += op
+    suspend fun invokeNowOrOnLoad(op: SuspendConsume<T>) =
+        mutex.withLock {
+            val v = slot
+            if (v != null) {
+                op(v.value)
+            } else {
+                onLoadOps += op
+            }
         }
-    }
 
     override suspend fun await(): T {
         mutex.lock()
@@ -76,7 +78,6 @@ class SuspendLoadedValueSlot<T>() : SuspendAwaitable<T> {
         }
         return newSlot
     }
-
 }
 
 
@@ -90,15 +91,16 @@ class ContinuationCoordinator<K>() {
 
     private val mutex = Mutex()
 
-    suspend fun putNextKey(t: K) = mutex.withLock {
-        slot = Value(t)
-        continuations.iterateM {
-            if (it.second() == t) {
-                it.first.resume(t)
-                remove()
+    suspend fun putNextKey(t: K) =
+        mutex.withLock {
+            slot = Value(t)
+            continuations.iterateM {
+                if (it.second() == t) {
+                    it.first.resume(t)
+                    remove()
+                }
             }
         }
-    }
 
     private val continuations = mutableListOf<Pair<Continuation<K>, () -> K>>()
 
@@ -111,17 +113,13 @@ class ContinuationCoordinator<K>() {
 
             val k = it.value
             if (k == itIs()) {
-//                println("unlocking 5")
                 mutex.unlock()
-//                println("unlocking 6")
                 return k
             }
         }
         return suspendCancellableCoroutine<K> {
             continuations.add(it to itIs)
-//            println("unlocking 7")
             mutex.unlock()
-//            println("unlocking 8")
         }
     }
 }

@@ -15,7 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 interface UsageContext
 
 class RequestResolver<T, S>(
-    val loader: Loader<S>,
+    val loader: Loader<S>
 ) {
     private val requested = mutableMapOf<S, MutableSet<ObjectRequest<T, S>>>()
 
@@ -26,7 +26,7 @@ class RequestResolver<T, S>(
     ) = ObjectRequest(source, generator, usageContextId).also { requestOrLink(it) }
 
     suspend fun requestOrLink(
-        req: ObjectRequest<T, S>,
+        req: ObjectRequest<T, S>
     ) {
         val existingRequests = requested[req.source]
         if (existingRequests == null) {
@@ -41,9 +41,7 @@ class RequestResolver<T, S>(
             }
 
             existingRequests.add(req)
-
         }
-
     }
 }
 
@@ -53,7 +51,7 @@ val RETRY_INTERVAL = 100.milliseconds
 
 private fun ObjectRequestBase2<*, *>.singleElementLoader(
     coScope: CoroutineScope,
-    progress: SimpleMutableProgress,
+    progress: SimpleMutableProgress
 ) = SingleElementLoader(this, coScope, progress)
 
 class Loader<S>(
@@ -97,17 +95,10 @@ class Loader<S>(
         progress.status("Loading Resources")
 
 
-        val batches = inputRequests.map {
-//            it.singleElementLoader(coScope = coScope, progress = progress)
-            SingleElementLoader(it, coScope, progress)
-//            it
-
-//            SingleElementLoader(
-//                it,
-//                coScope = coScope,
-//                progress = progress,
-//            )
-        }
+        val batches =
+            inputRequests.map {
+                SingleElementLoader(it, coScope, progress)
+            }
         if (maxConcurrentRequests == null) {
             batches.forEach {
                 it.start()
@@ -127,8 +118,6 @@ class Loader<S>(
                 maybeStartAnother()
             }
         }
-
-
     }
 
     fun whenFinished(op: Op) {
@@ -142,21 +131,22 @@ class Loader<S>(
 private class SingleElementLoader<T, S>(
     private val request: ObjectRequestBase2<T, S>,
     private val coScope: CoroutineScope,
-    private val progress: SimpleMutableProgress,
+    private val progress: SimpleMutableProgress
 ) {
     private var retriedCount: Int = 0
     val source = request.source
 
     private val subProgress = progress.subProgress()
 
-    fun start() = coScope.launch {
-        request.generator.generateFrom(
-            source,
-            onLoad = ::onLoad,
-            onErr = ::onErr,
-            onPartProgress = { subProgress.approximation v it }
-        )
-    }
+    fun start() =
+        coScope.launch {
+            request.generator.generateFrom(
+                source,
+                onLoad = ::onLoad,
+                onErr = ::onErr,
+                onPartProgress = { subProgress.approximation v it }
+            )
+        }
 
 
     private var didLoad = false
@@ -192,7 +182,6 @@ private class SingleElementLoader<T, S>(
             progress.failure(fullMessage)
         }
     }
-
 }
 
 interface ObjectRequestBase<T, S> {
@@ -231,14 +220,7 @@ class ObjectRequest<T, S>(
     suspend fun reUse(t: T) = generator.reUse(t)
 
     override fun getNowUnsafe() = slot.getNowUnsafe()
-//
-//    fun createSlotForCopiedObject(): SuspendLoadedValueSlot<T> {
-//        val copiedObjectSlot = SuspendLoadedValueSlot<T>()
-//        generator.generateFrom(source)
-//        invokeNowOrOnLoad {
-//            copiedObjectSlot
-//        }
-//    }
+
 
     suspend fun linkCopy(source: ObjectRequest<T, S>) {
         slot = source.slot.map { source.reUse(it) }
@@ -248,7 +230,5 @@ class ObjectRequest<T, S>(
         /*can be much more performant, but must ensure that it is not used at the same time as the source*/
         slot = source.slot
     }
-
-
 }
 

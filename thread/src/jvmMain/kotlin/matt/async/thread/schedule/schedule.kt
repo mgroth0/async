@@ -1,7 +1,7 @@
 package matt.async.thread.schedule
 
 import matt.async.bed.RepeatingJobBase
-import matt.async.pri.MyThreadPriorities
+import matt.async.pri.MyThreadPriority
 import matt.async.safe.with
 import matt.async.thread.daemon
 import matt.async.thread.executors.ThreadNamingExecutor
@@ -11,14 +11,14 @@ import matt.collect.maxlist.MaxList
 import matt.lang.assertions.require.requireEquals
 import matt.lang.assertions.require.requireIs
 import matt.lang.atomic.AtomicInt
+import matt.lang.common.massert
 import matt.lang.function.Op
-import matt.lang.massert
-import matt.lang.sync
-import matt.lang.sync.SimpleReferenceMonitor
-import matt.log.NONE
+import matt.lang.j.sync
+import matt.lang.sync.common.SimpleReferenceMonitor
+import matt.log.j.NONE
 import matt.log.logger.Logger
 import matt.model.code.vals.waitfor.WAIT_FOR_MS
-import matt.model.flowlogic.latch.SimpleThreadLatch
+import matt.model.flowlogic.latch.j.SimpleThreadLatch
 import matt.model.op.prints.plusAssign
 import matt.model.op.prints.tab
 import matt.time.UnixTime
@@ -69,14 +69,13 @@ class FullDelayBeforeEveryExecutionTimer(
         requireEquals(task, theTask)
         skipNextSleep()
     }
-
 }
 
 
 class AccurateTimer(
     name: String,
     logger: Logger = NONE,
-    private val priority: MyThreadPriorities? = null
+    private val priority: MyThreadPriority? = null
 ) : MattTimer<AccurateTimerTask>(name, logger) {
 
     private val waitTime by lazy { 100.milliseconds }
@@ -125,12 +124,10 @@ class AccurateTimer(
     override fun skipNextWait(task: MyTimerTask) {
         (task as AccurateTimerTask).skipNextDelay()
     }
-
 }
 
 
-// see https://stackoverflow.com/questions/409932/java-timer-vs-executorservice for a future big upgrade. However, I enjoy using this because I suspect it demands fewer resources than executor service and feels simpler in a way to have only a single thread
-//private val timer = Timer(true)
+/* see https://stackoverflow.com/questions/409932/java-timer-vs-executorservice for a future big upgrade. However, I enjoy using this because I suspect it demands fewer resources than executor service and feels simpler in a way to have only a single thread */
 private val mainTimer by lazy { AccurateTimer("MAIN_TIMER") }
 
 
@@ -256,8 +253,6 @@ open class MyTimerTask(
         }
         latch.await()
     }
-
-
 }
 
 class AccurateTimerTask(
@@ -282,8 +277,6 @@ class AccurateTimerTask(
             timer!!.tasks.sortBy { (it as AccurateTimerTask).next }
         }
     }
-
-
 }
 
 
@@ -291,8 +284,9 @@ abstract class MattTimer<T : MyTimerTask>(
     val name: String? = null,
     val logger: Logger = NONE
 ) {
-    final override fun toString(): String = if (name != null) "Timer:$name"
-    else super.toString()
+    final override fun toString(): String =
+        if (name != null) "Timer:$name"
+        else super.toString()
 
     internal val schedulingMonitor = SimpleReferenceMonitor()
 
@@ -322,24 +316,23 @@ abstract class MattTimer<T : MyTimerTask>(
 
     abstract fun skipNextWait(task: MyTimerTask)
 
-    fun checkCancel(task: T): Boolean = schedulingMonitor.sync {
-        if (task.cancelled) {
-            tasks.remove(task)
-            task.mightNotBeDoneLatch.open()
-            true
-        } else false
-    }
-
+    fun checkCancel(task: T): Boolean =
+        schedulingMonitor.sync {
+            if (task.cancelled) {
+                tasks.remove(task)
+                task.mightNotBeDoneLatch.open()
+                true
+            } else false
+        }
 }
 
 
-//private var usedTimer = false
 
 
 fun after(
     d: Duration,
     daemon: Boolean = false,
-    op: () -> Unit,
+    op: () -> Unit
 ) {
     namedThread(isDaemon = daemon, name = "after Thread") {
         sleep(d/*.toKotlinDuration()*/)
@@ -357,33 +350,36 @@ fun every(
     execSem: Semaphore? = null,
     onlyIf: () -> Boolean = { true },
     minRate: Duration? = null,
-    op: MyTimerTask.() -> Unit,
+    op: MyTimerTask.() -> Unit
 ): MyTimerTask {
     massert(!(ownTimer && timer != null))
-    val theTimer = (if (ownTimer) {
-        FullDelayBeforeEveryExecutionTimer()
-    } else timer ?: mainTimer)
-    val task = if (theTimer is AccurateTimer) AccurateTimerTask(
-        d/*.toKotlinDuration()*/,
-        op,
-        name,
-        execSem = execSem,
-        onlyIf = onlyIf,
-        minRateMillis = minRate?.inWholeMilliseconds
-    ).also {
-        theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
-    }
-    else MyTimerTask(
-        d/*.toKotlinDuration()*/,
-        op,
-        name,
-        execSem = execSem,
-        onlyIf = onlyIf,
-        minRateMillis = minRate?.inWholeMilliseconds
-    ).also {
-        requireIs<FullDelayBeforeEveryExecutionTimer>(theTimer)
-        theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
-    }
+    val theTimer = (
+        if (ownTimer) {
+            FullDelayBeforeEveryExecutionTimer()
+        } else timer ?: mainTimer
+    )
+    val task =
+        if (theTimer is AccurateTimer) AccurateTimerTask(
+            d/*.toKotlinDuration()*/,
+            op,
+            name,
+            execSem = execSem,
+            onlyIf = onlyIf,
+            minRateMillis = minRate?.inWholeMilliseconds
+        ).also {
+            theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
+        }
+        else MyTimerTask(
+            d/*.toKotlinDuration()*/,
+            op,
+            name,
+            execSem = execSem,
+            onlyIf = onlyIf,
+            minRateMillis = minRate?.inWholeMilliseconds
+        ).also {
+            requireIs<FullDelayBeforeEveryExecutionTimer>(theTimer)
+            theTimer.schedule(it, zeroDelayFirst = zeroDelayFirst)
+        }
     return task
 }
 
@@ -392,27 +388,28 @@ class SchedulingDaemon(
     resolution: Duration,
     name: String? = null
 ) {
-    private val thread = daemon(name = name ?: "SchedulingDaemon Thread") {
-        while (true) {
-            sleep(resolution)
-            val time = UnixTime()
-            synchronized(this) {
-                if (tasks.isEmpty() && takingUpMemory) {
-                    tasks = mutableListOf()
-                    takingUpMemory = false
-                } else {
-                    val itr = tasks.listIterator()
-                    while (itr.hasNext()) {
-                        val n = itr.next()
-                        if (time >= n.first) {
-                            n.second()
-                            itr.remove()
+    private val thread =
+        daemon(name = name ?: "SchedulingDaemon Thread") {
+            while (true) {
+                sleep(resolution)
+                val time = UnixTime()
+                synchronized(this) {
+                    if (tasks.isEmpty() && takingUpMemory) {
+                        tasks = mutableListOf()
+                        takingUpMemory = false
+                    } else {
+                        val itr = tasks.listIterator()
+                        while (itr.hasNext()) {
+                            val n = itr.next()
+                            if (time >= n.first) {
+                                n.second()
+                                itr.remove()
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
     private var takingUpMemory = false
     private var tasks = mutableListOf<Pair<UnixTime, Op>>()

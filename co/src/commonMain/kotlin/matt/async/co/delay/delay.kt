@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import matt.async.bed.RepeatingJobBase
 import matt.lang.function.Op
 import matt.lang.function.SuspendOp
-import matt.lang.sync.SimpleReferenceMonitor
+import matt.lang.sync.common.SimpleReferenceMonitor
 import matt.lang.sync.inSync
 import matt.time.UnixTime
 import kotlin.time.Duration
@@ -45,7 +45,6 @@ class RepeatingCoroutineJob(
     override fun signalToStop() {
         cancelled = true
     }
-
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -62,33 +61,37 @@ fun CoroutineScope.launchWithInitialDelay(
     }
 
     var runOp = true
-    val j = launch {
-        try {
-            val unRushedDelay = produce<Unit>(capacity = Factory.UNLIMITED) {
-                delay(initialDelay)
-            }
+    val j =
+        launch {
+            try {
+                val unRushedDelay =
+                    produce<Unit>(capacity = Factory.UNLIMITED) {
+                        delay(initialDelay)
+                    }
 
-            val rusher = produce<Unit>(capacity = Channel.UNLIMITED) {
-                rusherMutex.lock()
+                val rusher =
+                    produce<Unit>(capacity = Channel.UNLIMITED) {
+                        rusherMutex.lock()
+                    }
+                select {
+                    unRushedDelay.onReceiveCatching {}
+                    rusher.onReceiveCatching {}
+                }
+                /*DONT FORGET THIS PART. NOT CANCELLING THE TWO THINGS BELOW CAUSED ME MAJOR DEADLOCKS FOR A WHILE.*/
+                unRushedDelay.cancel()
+                rusher.cancel()
+            } finally {
+                safelyUnlock()
             }
-            select {
-                unRushedDelay.onReceiveCatching {}
-                rusher.onReceiveCatching {}
-            }
-            /*DONT FORGET THIS PART. NOT CANCELLING THE TWO THINGS BELOW CAUSED ME MAJOR DEADLOCKS FOR A WHILE.*/
-            unRushedDelay.cancel()
-            rusher.cancel()
-        } finally {
-            safelyUnlock()
+            if (runOp) op()
         }
-        if (runOp) op()
-    }
     return DelayedJob(
         j, doRush = {
             safelyUnlock()
         }, signalToNotRunOp = {
             runOp = false
-        })
+        }
+    )
 }
 
 class DelayedJob(
@@ -128,7 +131,6 @@ class IntervalEnforcer(
     fun reset() {
         timer.click()
     }
-
 }
 
 

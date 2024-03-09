@@ -26,60 +26,62 @@ class DomainSemaphore<T : Any> {
         domain: T,
         op: SuspendOp
     ) {
-        val myLatch = run {
-            mutex.lock()
-            when (currentDomain) {
-                null   -> {
-                    currentDomain = domain
-                    val myMutex = SimpleCoLatch()
-                    check(latches.isEmpty())
-                    latches.add(myMutex)
-                    mutex.unlock()
-                    myMutex
-                }
-
-                domain -> {
-                    val latch = SimpleCoLatch()
-                    latches.add(latch)
-                    mutex.unlock()
-                    latch
-                }
-
-                else   -> {
-
-                    var latchesToAwait = latches.toSet()
-
-
-                    mutex.unlock()
-                    val latch = SimpleCoLatch()
-
-                    do {
-                        check(latchesToAwait.isNotEmpty())
-                        latchesToAwait.forEach {
-                            it.await()
-                        }
-                        mutex.lock()
-                        latchesToAwait = if (currentDomain == null) {
-                            currentDomain = domain
-                            check(latches.isEmpty())
-                            latches.add(latch)
-                            mutex.unlock()
-                            break
-                        } else if (currentDomain == domain) {
-                            latches.add(latch)
-                            mutex.unlock()
-                            break
-                        } else {
-                            latches.toSet()
-                        }
+        val myLatch =
+            run {
+                mutex.lock()
+                when (currentDomain) {
+                    null   -> {
+                        currentDomain = domain
+                        val myMutex = SimpleCoLatch()
+                        check(latches.isEmpty())
+                        latches.add(myMutex)
                         mutex.unlock()
-                    } while (true)
+                        myMutex
+                    }
+
+                    domain -> {
+                        val latch = SimpleCoLatch()
+                        latches.add(latch)
+                        mutex.unlock()
+                        latch
+                    }
+
+                    else   -> {
+
+                        var latchesToAwait = latches.toSet()
 
 
-                    latch
+                        mutex.unlock()
+                        val latch = SimpleCoLatch()
+
+                        do {
+                            check(latchesToAwait.isNotEmpty())
+                            latchesToAwait.forEach {
+                                it.await()
+                            }
+                            mutex.lock()
+                            latchesToAwait =
+                                if (currentDomain == null) {
+                                    currentDomain = domain
+                                    check(latches.isEmpty())
+                                    latches.add(latch)
+                                    mutex.unlock()
+                                    break
+                                } else if (currentDomain == domain) {
+                                    latches.add(latch)
+                                    mutex.unlock()
+                                    break
+                                } else {
+                                    latches.toSet()
+                                }
+                            mutex.unlock()
+                        } while (true)
+
+
+                        latch
+                    }
                 }
             }
-        }
         try {
             op()
         } finally {
@@ -144,14 +146,12 @@ class ReentrantCoReadWriteSem : ReadWriteSem {
 
     private class ReentrantSemaphoreElement(
         override val key: ReentrantSemaphoreKey,
-        val permits: Int,
+        val permits: Int
     ) : CoroutineContext.Element
 
     private data class ReentrantSemaphoreKey(
         val semaphore: Semaphore
     ) : CoroutineContext.Key<ReentrantSemaphoreElement>
-
-
 }
 
 

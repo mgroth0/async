@@ -12,7 +12,7 @@ abstract class RepeatableDelayableJob<L : SimpleLatch>(
     val name: String? = null,
     interJobInterval: Duration,
     protected val executor: NamingExecutor,
-    val op: () -> Unit,
+    val op: () -> Unit
 ) : ProceedingIdea, Cancellable {
     final override fun toString() = "RepeatableDelayableJob[name=$name]"
 
@@ -31,7 +31,7 @@ abstract class RepeatableDelayableJob<L : SimpleLatch>(
 
     abstract fun rescheduleForNowPlus(
         d: Duration,
-        orRunImmediatelyIfItsBeen: Duration? = null,
+        orRunImmediatelyIfItsBeen: Duration? = null
     )
 
     protected abstract fun rescheduleForNowInner()

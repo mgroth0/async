@@ -18,5 +18,4 @@ object RunInPlaceJobmanager : JobManager {
     override fun closeAndJoinAll() = Unit
 
     override fun shutdownForcefully() = Unit
-
 }

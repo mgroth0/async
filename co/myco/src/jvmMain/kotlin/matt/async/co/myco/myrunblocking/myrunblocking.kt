@@ -19,9 +19,8 @@ import kotlinx.coroutines.newCoroutineContext
 import kotlinx.coroutines.registerTimeLoopThread
 import kotlinx.coroutines.unboxState
 import kotlinx.coroutines.unregisterTimeLoopThread
-import matt.async.co.myco.myeventloop.MyThreadLocalEventLoop
 import matt.lang.anno.SeeURL
-import matt.lang.unsafeErr
+import matt.lang.common.unsafeErr
 import java.util.concurrent.locks.LockSupport.parkNanos
 import java.util.concurrent.locks.LockSupport.unpark
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
@@ -30,9 +29,11 @@ import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/*TODO rename this module "unsafe"?*/
-
 /*
+
+TODO rename this module "unsafe"?
+
+
 
 In the library, this is an `actual` fun. The `expect` fun is in the `concurrent` modules, which I think means common between jvm and native but excluding js. The default `EmptyCoroutineContext` is defined in the expect fun in the library.
 
@@ -57,7 +58,7 @@ fun <T> runBlockingInShutdown(
     val newContext: CoroutineContext
     if (contextInterceptor == null) {
         /*create or use private event loop if no dispatcher is specified*/
-        eventLoop = MyThreadLocalEventLoop.eventLoop
+        eventLoop = /*MyThreadLocalEventLoop*/ThreadLocalEventLoop.eventLoop
         newContext = GlobalScope.newCoroutineContext(context + eventLoop)
     } else {
         /*See if context's interceptor is an event loop that we shall use (to support TestContext)
@@ -115,7 +116,7 @@ private class BlockingCoroutine<T>(
             unregisterTimeLoopThread()
         }
         /*now return result*/
-        val state = this.state.unboxState()
+        val state = state.unboxState()
         (state as? CompletedExceptionally)?.let { throw it.cause }
         return state as T
     }

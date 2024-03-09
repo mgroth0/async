@@ -12,19 +12,26 @@ fun <T> realSuspendLazy(op: suspend () -> T) = RealSuspendLazy(op)
 
 class RealSuspendLazy<T>(private val op: suspend () -> T): SuspendLazy<T> {
 
+    fun ifInitialized(op: (T) -> Unit) {
+        if (isInitialized) {
+            op(value!!.value)
+        }
+    }
+    val isInitialized: Boolean get() = value != null
+
     private val mutex = Mutex()
 
     private var value: Value<T>? = null
 
-    override suspend fun get(): T = mutex.withLock {
-        if (value == null) {
-            value = Value(op())
+    override suspend fun get(): T =
+        mutex.withLock {
+            if (value == null) {
+                value = Value(op())
+            }
+            value!!.value
         }
-        value!!.value
-    }
 
     suspend operator fun invoke(): T = get()
-
 }
 
 

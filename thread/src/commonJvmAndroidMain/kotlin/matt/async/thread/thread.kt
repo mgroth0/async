@@ -1,14 +1,13 @@
-@file:JvmName("ThreadJvmAndroidKt")
 @file:Suppress("ktlint:matt:no-disallowed-imports-thread")
 
 package matt.async.thread
 
 
-import matt.async.pri.MyThreadPriorities
+import matt.async.pri.MyThreadPriority
 import matt.lang.function.Op
 import matt.lang.service.ThreadProvider
 import matt.log.textart.TEXT_BAR
-import matt.model.code.errreport.Report
+import matt.model.code.errreport.common.Report
 import matt.model.flowlogic.await.ThreadAwaitable
 import kotlin.concurrent.thread
 
@@ -56,30 +55,39 @@ fun <R> R.runInDaemon(op: R.() -> Unit) {
 fun daemon(
     name: String,
     start: Boolean = true,
-    priority: MyThreadPriorities? = null,
+    priority: MyThreadPriority? = null,
     block: () -> Unit
-): Thread = namedThread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
-    block()
+): Thread =
+    namedThread(name = name, isDaemon = true, start = start, priority = priority?.ordinal ?: -1) {
+        block()
+    }
+
+fun namedThreadNotReturned(
+    name: String,
+    isDaemon: Boolean = DEFAULT_IS_DAEMON,
+    block: () -> Unit
+) {
+    namedThread(name = name, block = block, isDaemon = isDaemon)
 }
 
 /*enforcing thread naming*/
 fun namedThread(
     name: String,
     start: Boolean = true,
-    isDaemon: Boolean = false,
+    isDaemon: Boolean = DEFAULT_IS_DAEMON,
     priority: Int = -1,
     block: () -> Unit
 ) = thread(name = name, block = block, start = start, isDaemon = isDaemon, priority = priority)
 
+private const val DEFAULT_IS_DAEMON = false
 
 object TheThreadProvider : ThreadProvider {
-    override fun namedThread(
+    override fun newThread(
         name: String,
         isDaemon: Boolean,
         start: Boolean,
         block: Op
-    ) = matt.async.thread.namedThread(name = name, isDaemon = isDaemon, start = start, block = block)
-
+    ) = namedThread(name = name, isDaemon = isDaemon, start = start, block = block)
 }
 
 private class CatchingThreadJoiner() : ThreadAwaitable<Throwable?> {
@@ -95,18 +103,19 @@ private class CatchingThreadJoiner() : ThreadAwaitable<Throwable?> {
 fun catchingThread(
     name: String,
     start: Boolean = true,
-    isDaemon: Boolean = false,
+    isDaemon: Boolean = DEFAULT_IS_DAEMON,
     priority: Int = -1,
     block: () -> Unit
 ): ThreadAwaitable<Throwable?> {
     val catchingThreadJoiner = CatchingThreadJoiner()
-    val t = thread(name = name, block = {
-        try {
-            block()
-        } catch (t: Throwable) {
-            catchingThreadJoiner.throwable = t
-        }
-    }, start = start, isDaemon = isDaemon, priority = priority)
+    val t =
+        thread(name = name, block = {
+            try {
+                block()
+            } catch (t: Throwable) {
+                catchingThreadJoiner.throwable = t
+            }
+        }, start = start, isDaemon = isDaemon, priority = priority)
     catchingThreadJoiner.thread = t
     return catchingThreadJoiner
 }

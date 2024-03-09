@@ -3,7 +3,7 @@ package matt.async.co.app
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import matt.async.co.scope.MyScope
-import matt.lang.debug.properlyLogErrorStackTracesSuspending
+import matt.lang.debug.js.properlyLogErrorStackTracesSuspending
 
 /*
 

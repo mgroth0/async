@@ -22,9 +22,10 @@ suspend fun <A : Appendable> ReceiveChannel<String>.consumeLinesTo(appendable: A
 }
 
 
-suspend fun <T : Any> ReceiveChannel<T>.nextOrNullIfClosed() = receiveCatching().let {
-    it.exceptionOrNull()?.let { throw Exception("Channel Failure", it) }
-    if (it.isClosed) null
-    else it.getOrThrow()
-}
+suspend fun <T : Any> ReceiveChannel<T>.nextOrNullIfClosed() =
+    receiveCatching().let {
+        it.exceptionOrNull()?.let { throw Exception("Channel Failure", it) }
+        if (it.isClosed) null
+        else it.getOrThrow()
+    }
 

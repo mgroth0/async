@@ -3,9 +3,9 @@ package matt.async.co.latch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
-import matt.lang.go
-import matt.lang.sync.ReferenceMonitor
-import matt.lang.sync.inSync
+import matt.lang.common.go
+import matt.lang.sync.common.ReferenceMonitor
+import matt.lang.sync.common.inSync
 import matt.model.flowlogic.await.SuspendAwaitable
 import matt.model.flowlogic.latch.LatchAwaitResult
 import matt.model.flowlogic.latch.LatchAwaitResult.LATCH_OPENED
@@ -39,7 +39,7 @@ class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch, ReferenceMonitor {
     private val mutex = Mutex(locked = true)
 
     /*private val sem = Semaphore(permits = 1, acquiredPermits = 1)*/
-    override suspend fun await() {/*mutex.unlock()*//*latch.await()*/
+    override suspend fun await() {
         mutex.withLock { }
         failure?.go { throw it }
     }
@@ -47,11 +47,12 @@ class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch, ReferenceMonitor {
     suspend fun await(timeout: Duration): LatchAwaitResult {
 
 
-        val result = withTimeoutOrNull(
-            timeout
-        ) {
-            mutex.withLock { }
-        }
+        val result =
+            withTimeoutOrNull(
+                timeout
+            ) {
+                mutex.withLock { }
+            }
 
 
         return if (result != null) {
@@ -69,34 +70,17 @@ class SimpleCoLatch : SuspendAwaitable<Unit>, SimpleLatch, ReferenceMonitor {
         }
     }
 
-    override fun open() = inSync {
-        if (mutex.isLocked) {
-            mutex.unlock()
+    override fun open() =
+        inSync {
+            if (mutex.isLocked) {
+                mutex.unlock()
+            }
         }
-    }
-//
-//    fun play(scope: CoroutineScope) {
-//
-//        scope.coroutineContext.apply {
-//            await()
-//        }
-//        scope.apply {
-//            await()
-//        }
-//    }
-//    override fun awaitBlocking() {
-//        runBlocking {
-//
-//        }
-//        MyScope().launch {
-//            await()
-//        }.join()
-//        await()
-//    }
 
     val isOpen get() = !isClosed
     val isClosed get() = mutex.isLocked
-    fun opened() = apply {
-        open()
-    }
+    fun opened() =
+        apply {
+            open()
+        }
 }

@@ -9,7 +9,8 @@ import matt.collect.queue.MyMutableQueueImpl
 import matt.collect.queue.pollUntilEnd
 import matt.lang.assertions.require.requireNot
 import matt.lang.function.Op
-import matt.lang.sync.ReferenceMonitor
+import matt.lang.sync.common.ReferenceMonitor
+import matt.lang.sync.common.inSync
 import matt.lang.sync.inSync
 import matt.model.flowlogic.keypass.KeyPass
 import matt.time.UnixTime
@@ -25,7 +26,8 @@ class RepeatableDelayableJobCoImpl(
     op: Op
 ) : RepeatableDelayableJob<SimpleCoLatch>(
         name = name, interJobInterval = refreshRate, executor = coExecutor, op = op
-    ), ReferenceMonitor {
+    ),
+    ReferenceMonitor {
 
 
     override fun newLatch() = SimpleCoLatch()
@@ -78,12 +80,13 @@ class RepeatableDelayableJobCoImpl(
         return ticket
     }
 
-    override fun hurry()  = inSync{
-        requireNot(cancelled)
-        if (runningOpFlag.isNotHeld) {
-            nextRunTime = UnixTime()
+    override fun hurry() =
+        inSync {
+            requireNot(cancelled)
+            if (runningOpFlag.isNotHeld) {
+                nextRunTime = UnixTime()
+            }
         }
-    }
 
     private val timeSinceLastRunFinished get() = lastRunFinished?.let { UnixTime() - it }
     private var lastRunFinished: UnixTime? = null
@@ -92,27 +95,28 @@ class RepeatableDelayableJobCoImpl(
     }
     private val runningOpFlag = KeyPass()
     private var nextRunTime: UnixTime? = null
-    override val coreLoopJob = RepeatingCoroutineJob(
-        interJobInterval = refreshMillis.milliseconds,
-        name = "RepeatableDelayableJob Thread (name=$name)",
-        scope = scope,
-        op = {
-            val shouldRun = inSync(this) {
-                val shouldRun = nextRunTime?.let { it < UnixTime() } == true
+    override val coreLoopJob =
+        RepeatingCoroutineJob(
+            interJobInterval = refreshMillis.milliseconds,
+            name = "RepeatableDelayableJob Thread (name=$name)",
+            scope = scope,
+            op = {
+                val shouldRun =
+                    inSync(this) {
+                        val shouldRun = nextRunTime?.let { it < UnixTime() } == true
+                        if (shouldRun) {
+                            nextRunTime = null
+                            runningOpFlag.hold()
+                        }
+                        shouldRun
+                    }
                 if (shouldRun) {
-                    nextRunTime = null
-                    runningOpFlag.hold()
+                    val tickets = waitTickets.pollUntilEnd()
+                    op()
+                    lastRunFinished = UnixTime()
+                    tickets.forEach { it.open() }
+                    runningOpFlag.release()
                 }
-                shouldRun
             }
-            if (shouldRun) {
-                val tickets = waitTickets.pollUntilEnd()
-                op()
-                lastRunFinished = UnixTime()
-                tickets.forEach { it.open() }
-                runningOpFlag.release()
-            }
-        }
-    )
-
+        )
 }

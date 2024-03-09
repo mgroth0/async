@@ -2,8 +2,8 @@ package matt.async.bed
 
 import matt.lang.assertions.require.requireNot
 import matt.lang.idea.ProceedingIdea
-import matt.lang.sync.ReferenceMonitor
-import matt.lang.sync.inSync
+import matt.lang.sync.common.ReferenceMonitor
+import matt.lang.sync.common.inSync
 
 interface RepeatingJob : ProceedingIdea {
     fun start()

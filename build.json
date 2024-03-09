@@ -17,9 +17,9 @@
       "path": ":k:test"
     },
     {
-      "type": "Lib",
+      "type": "Project",
       "cfg": "androidInstrumentedTestImplementation",
-      "key": "androidx-test-runner"
+      "path": ":k:test:ainstrument"
     }
   ],
   "jvm": {

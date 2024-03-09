@@ -55,11 +55,11 @@ class MutSemMap<K, V>(
     fun setIfNotFull(
         k: K,
         v: V
-    ): Boolean = if (map.size < maxsize) {
-        map[k] = v
-        true
-    } else false
-
+    ): Boolean =
+        if (map.size < maxsize) {
+            map[k] = v
+            true
+        } else false
 }
 
 
@@ -97,22 +97,12 @@ fun <T> Semaphore.with(op: () -> T): T {
     return r
 }
 
-// runs op in thread with sem. Caller thread makes sure that sem is acquired before continuing.
-// literally a combination of sem and thread
-fun Semaphore.thread(op: () -> Unit) {
-    acquire()
-    kotlin.concurrent.thread(name = "semaphore thread") {
-        op()
-        release()
-    }
-}
-
 
 
 fun Semaphore.wrap(op: () -> Unit): () -> Unit = { with(op) }
 
 
-// Check out FutureTasks too!
+/* Check out FutureTasks too! */
 
 @Suppress("unused")
 class MySemaphore(val name: String) : Semaphore(1) {
