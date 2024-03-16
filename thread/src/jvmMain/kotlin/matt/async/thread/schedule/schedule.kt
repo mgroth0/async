@@ -1,10 +1,8 @@
 package matt.async.thread.schedule
 
-import matt.async.bed.RepeatingJobBase
 import matt.async.pri.MyThreadPriority
 import matt.async.safe.with
 import matt.async.thread.daemon
-import matt.async.thread.executors.ThreadNamingExecutor
 import matt.async.thread.namedThread
 import matt.async.thread.schedule.ThreadInterface.Canceller
 import matt.collect.maxlist.MaxList
@@ -425,22 +423,3 @@ class SchedulingDaemon(
 }
 
 
-class RepeatingThreadJob(
-    private val name: String,
-    private val interJobInterval: Duration = 10.milliseconds,
-    private val op: Op
-) : RepeatingJobBase() {
-    private var cancelled = false
-    override fun protectedStart() {
-        ThreadNamingExecutor.namedExecution(name) {
-            while (!cancelled) {
-                op()
-                sleep(interJobInterval)
-            }
-        }
-    }
-
-    override fun signalToStop() {
-        cancelled = true
-    }
-}

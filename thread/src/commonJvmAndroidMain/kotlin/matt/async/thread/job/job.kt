@@ -2,7 +2,7 @@ package matt.async.thread.job
 
 import matt.async.every.job.RepeatableDelayableJob
 import matt.async.thread.executors.ThreadNamingExecutor
-import matt.async.thread.schedule.RepeatingThreadJob
+import matt.async.thread.jschedule.RepeatingThreadJob
 import matt.collect.queue.j.JQueueWrapper
 import matt.collect.queue.pollUntilEnd
 import matt.lang.anno.expects.OnlySynchronizedOnJvm

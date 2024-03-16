@@ -77,7 +77,7 @@ fun CoroutineScope.launchWithInitialDelay(
                     unRushedDelay.onReceiveCatching {}
                     rusher.onReceiveCatching {}
                 }
-                /*DONT FORGET THIS PART. NOT CANCELLING THE TWO THINGS BELOW CAUSED ME MAJOR DEADLOCKS FOR A WHILE.*/
+                /*DON'T FORGET THIS PART. NOT CANCELLING THE TWO THINGS BELOW CAUSED ME MAJOR DEADLOCKS FOR A WHILE.*/
                 unRushedDelay.cancel()
                 rusher.cancel()
             } finally {
@@ -102,6 +102,14 @@ class DelayedJob(
 
     fun rush() {
         doRush()
+    }
+    suspend fun rushAndJoin() {
+        rush()
+        join()
+    }
+    suspend fun signalToNotRunThenRushAndJoin() {
+        signalToNotRunOp.invoke()
+        rushAndJoin()
     }
 }
 
