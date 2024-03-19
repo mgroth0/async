@@ -2,6 +2,7 @@ package matt.async.safe
 
 import kotlinx.serialization.Serializable
 import java.util.concurrent.Semaphore
+import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind.EXACTLY_ONCE
 import kotlin.contracts.contract
 
@@ -87,6 +88,7 @@ class SemaphoreString(private var string: String) {
 fun sync(op: () -> Unit) = Semaphore(1).wrap(op)
 
 
+@OptIn(ExperimentalContracts::class)
 fun <T> Semaphore.with(op: () -> T): T {
     contract {
         callsInPlace(op, EXACTLY_ONCE)
